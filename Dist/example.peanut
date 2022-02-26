@@ -1,0 +1,10 @@
+var gwa = []
+for i=0 until 10 =>
+if i==4 => continue elif i==8 => break
+var gwa = gwa + i
+print(gwa)
+end
+
+function gwa(input)
+print("gwa" + input)
+end
