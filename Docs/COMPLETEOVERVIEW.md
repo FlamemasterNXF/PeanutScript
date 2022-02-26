@@ -41,6 +41,10 @@ Note that booleans are returned in a binary form. 1 = True and 0 = False.<br>
 - and : Checks if two different conditions are true. `and` can be chained multiple times!<br>Syntax: `COMPARISON and COMPARISON`
 - or : Checks if one of two statements are true. `or` can be chained multiple times!<br>Syntax: `COMPARISON or COMPARISON`
 - not : Checks if one statement is not true.<br>Syntax: `not SOMETHING`
+- < : Checks if one value is less than another.<br>Syntax: `1 < 2`
+- <= : Checks if one value is less than or equal to another.<br>Syntax: `1 <= 2`
+- \> : Checks if one value is greater than another.<br>Syntax: `1 > 2`
+- \>= : Checks if one value is greater than or equal to another.<br>Syntax: `1 >= 2`
 
 ## For and While loops
 ____
