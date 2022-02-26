@@ -31,4 +31,4 @@ You do not need to add .peanut to the end of the file name when using `run`, Pea
 ____
 Congrats on successfully running and installing PeanutScript!<br>
 If you'd like to make your own files you can simply create a new file called whatever you like, just don't forget to add `.peanut` as the file extension!<br>
-If you'd like to go further with PeanutScript I'd recommend checking out the [Complete Syntax Guide](COMPLETEOVERVIEWmd)!
+If you'd like to go further with PeanutScript I'd recommend checking out the [Complete Syntax Guide](COMPLETEOVERVIEW.md)!

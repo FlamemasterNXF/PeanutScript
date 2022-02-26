@@ -4,7 +4,7 @@ This is just a small little project of mine :)
 
 # Documentation
 [Quick Start](Docs/QUICKSTART.md) <br>
-[Complete Overview](Docs/COMPLETEOVERVIEWmd) <br>
+[Complete Overview](Docs/COMPLETEOVERVIEW.md) <br>
 [Built-ins](Docs/BUILTIN.md) <br>
 [Examples](Docs/EXAMPLES.md) <br>
 
