@@ -1537,7 +1537,7 @@ class Array(Value):
         new_list.elements.append(other)
         return new_list, None
 
-    def subtacted_by(self, other):
+    def subtracted_by(self, other):
         if isinstance(other, Number):
             new_list = self.copy()
             try:
@@ -1970,7 +1970,7 @@ class Interpreter:
         if node.op_tok.type == TT_PLUS:
             result, error = left.added_to(right)
         elif node.op_tok.type == TT_MINUS:
-            result, error = left.subtacted_by(right)
+            result, error = left.subtracted_by(right)
         elif node.op_tok.type == TT_MUL:
             result, error = left.multiplied_by(right)
         elif node.op_tok.type == TT_DIV:
