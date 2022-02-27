@@ -1768,6 +1768,24 @@ class BuiltInFunction(BaseFunction):
 
     execute_is_number.arg_names = ['value']
 
+    def execute_typeof(self, exec_ctx):
+        is_number = isinstance(exec_ctx.symbol_table.get('value'), Number)
+        is_string = isinstance(exec_ctx.symbol_table.get('value'), String)
+        is_array = isinstance(exec_ctx.symbol_table.get('value'), Array)
+        is_function = isinstance(exec_ctx.symbol_table.get('value'), BaseFunction)
+        if is_number:
+            return RTResult().success(String("Number"))
+        elif is_string:
+            return RTResult().success(String("String"))
+        elif is_array:
+            return RTResult().success(String("Array"))
+        elif is_function:
+            return RTResult().success(String("Function"))
+        else:
+            return RTResult().success(String("That's strange, this value has no type."))
+
+    execute_typeof.arg_names = ['value']
+
     def execute_append(self, exec_ctx):
         array_ = exec_ctx.symbol_table.get('array')
         value = exec_ctx.symbol_table.get('value')
@@ -1890,6 +1908,7 @@ BuiltInFunction.is_number = BuiltInFunction("is_number")
 BuiltInFunction.is_string = BuiltInFunction("is_string")
 BuiltInFunction.is_array = BuiltInFunction("is_array")
 BuiltInFunction.is_function = BuiltInFunction("is_function")
+BuiltInFunction.typeof = BuiltInFunction("typeof")
 BuiltInFunction.append = BuiltInFunction("append")
 BuiltInFunction.remove = BuiltInFunction("remove")
 BuiltInFunction.concat = BuiltInFunction("concat")
@@ -2187,6 +2206,7 @@ global_symbol_table.set("isNumber", BuiltInFunction.is_number)
 global_symbol_table.set("isString", BuiltInFunction.is_string)
 global_symbol_table.set("isArray", BuiltInFunction.is_array)
 global_symbol_table.set("isFunction", BuiltInFunction.is_function)
+global_symbol_table.set("typeof", BuiltInFunction.typeof)
 global_symbol_table.set("append", BuiltInFunction.append)
 global_symbol_table.set("removeIndex", BuiltInFunction.remove)
 global_symbol_table.set("concat", BuiltInFunction.concat)
