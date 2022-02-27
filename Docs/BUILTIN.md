@@ -16,8 +16,7 @@ Here is a simple complete list of them all :)<br>
 - append() : Adds a value to an array. **May be broken, use `array + n` instead**
 - removeIndex() : Removes a value from an array at a specified index. **May be broken, use `array - n` instead**
 - concat() : Combines two or more arrays into one. **May be broken, use `array * array` instead**
-- length() : Takes in an array and returns the length.
-- stringLength() : Takes in a String and returns the amount of characters in the String.
+- length() : Takes in an Array or String and returns the length.
 - break : Force exits a loop.
 - continue : Skips an iteration of a loop.
 - return() : Returns a value. Can be a string or a number.

@@ -1874,18 +1874,6 @@ class BuiltInFunction(BaseFunction):
 
     def execute_len(self, exec_ctx):
         array_ = exec_ctx.symbol_table.get('array')
-        if not isinstance(array_, Array):
-            return RTResult().failure(RTError(
-                self.pos_start, self.pos_end,
-                "Argument must be an array",
-                exec_ctx
-            ))
-        return RTResult().success(Number(len(array_.elements)))
-
-    execute_len.arg_names = ['array']
-
-    def execute_len_string(self, exec_ctx):
-        array_ = exec_ctx.symbol_table.get('array')
         if isinstance(array_, Array): return RTResult().success(Number(len(array_.elements)))
         elif isinstance(array_, String): return RTResult().success(Number(len(array_.value)))
         else:
@@ -1895,7 +1883,7 @@ class BuiltInFunction(BaseFunction):
                 exec_ctx
             ))
 
-    execute_len_string.arg_names = ['array']
+    execute_len.arg_names = ['array']
 
     def execute_run(self, exec_ctx):
         fn = exec_ctx.symbol_table.get('fn')
@@ -1945,7 +1933,6 @@ BuiltInFunction.append = BuiltInFunction("append")
 BuiltInFunction.remove = BuiltInFunction("remove")
 BuiltInFunction.concat = BuiltInFunction("concat")
 BuiltInFunction.len = BuiltInFunction("len")
-BuiltInFunction.len_string = BuiltInFunction("len_string")
 BuiltInFunction.run = BuiltInFunction("run")
 
 
@@ -2244,7 +2231,6 @@ global_symbol_table.set("append", BuiltInFunction.append)
 global_symbol_table.set("removeIndex", BuiltInFunction.remove)
 global_symbol_table.set("concat", BuiltInFunction.concat)
 global_symbol_table.set("length", BuiltInFunction.len)
-global_symbol_table.set("stringLength", BuiltInFunction.len_string)
 global_symbol_table.set("run", BuiltInFunction.run)
 
 
