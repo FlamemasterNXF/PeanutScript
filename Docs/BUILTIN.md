@@ -22,3 +22,9 @@ Here is a simple complete list of them all :)<br>
 - return() : Returns a value. Can be a string or a number.
 - run() : Takes in a string and runs the PeanutScript file with the same name.
 - use() : Takes in a string and allows the file it is used in to access the PeanutScript file with the same name. Also runs that file.
+
+### Built-in Values
+- TRUE_VALUE : returns 1
+- FALSE_VALUE : returns 0
+- INFINITY : returns `inf`
+- NEGATIVE_INF : returns `-inf`

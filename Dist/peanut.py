@@ -1509,6 +1509,8 @@ class Number(Value):
 Number.null = Number(0)
 Number.false = Number(0)
 Number.true = Number(1)
+Number.infinity = Number(float('inf'))
+Number.negative_infinity = Number(float('-inf'))
 
 
 class String(Value):
@@ -2258,6 +2260,8 @@ global_symbol_table.set("NO_RETURN", String.no_return)
 global_symbol_table.set("ZERO", Number.null)
 global_symbol_table.set("FALSE_VALUE", Number.false)
 global_symbol_table.set("TRUE_VALUE", Number.true)
+global_symbol_table.set("INFINITY", Number.infinity)
+global_symbol_table.set("NEGATIVE_INF", Number.negative_infinity)
 global_symbol_table.set("print", BuiltInFunction.print)
 global_symbol_table.set("printReturn", BuiltInFunction.print_return)
 global_symbol_table.set("input", BuiltInFunction.input)
