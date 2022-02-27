@@ -21,3 +21,4 @@ Here is a simple complete list of them all :)<br>
 - continue : Skips an iteration of a loop.
 - return() : Returns a value. Can be a string or a number.
 - run() : Takes in a string and runs the PeanutScript file with the same name.
+- use() : Takes in a string and allows the file it is used in to access the PeanutScript file with the same name. Also runs that file.

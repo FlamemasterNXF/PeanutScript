@@ -1,0 +1,3 @@
+# this is an example for using multiple files!
+# this function is called in example.peanut
+function hi() => print("Hello, this is coming from another file!")

@@ -1257,6 +1257,7 @@ class RTResult:
         self.func_return_value = None
         self.loop_should_continue = False
         self.loop_should_break = False
+        self.to_reverse_count = 0
         self.reset()
 
     def reset(self):
@@ -1265,6 +1266,7 @@ class RTResult:
         self.func_return_value = None
         self.loop_should_continue = False
         self.loop_should_break = False
+        self.to_reverse_count = 0
 
     def register(self, res):
         self.error = res.error
@@ -1272,6 +1274,12 @@ class RTResult:
         self.loop_should_continue = res.loop_should_continue
         self.loop_should_break = res.loop_should_break
         return res.value
+
+    def try_register(self, res):
+        if res.error:
+            self.to_reverse_count = res.advance_count
+            return None
+        return self.register(res)
 
     def success(self, value=None):
         self.reset()
@@ -1918,6 +1926,39 @@ class BuiltInFunction(BaseFunction):
 
     execute_run.arg_names = ['fn']
 
+    def execute_use(self, exec_ctx):
+        fn = exec_ctx.symbol_table.get('fn')
+        if not isinstance(fn, String):
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                "Argument must be a string",
+                exec_ctx
+            ))
+        fn = fn.value
+        if fn != re.search(".peanut$", fn):
+            fn += ".peanut"
+
+        try:
+            with open(fn, 'r') as f:
+                script = f.read()
+        except Exception as e:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                f"Failed to load script \"{fn}\"\n" + str(e),
+                exec_ctx
+            ))
+
+        _, error = run(fn, script)
+        if error:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                f"Failed to finish executing script \"{fn}\"\n" + error.as_string(),
+                exec_ctx
+            ))
+        return RTResult().success(String.no_return)
+
+    execute_use.arg_names = ['fn']
+
 
 BuiltInFunction.print = BuiltInFunction("print")
 BuiltInFunction.print_return = BuiltInFunction("print_return")
@@ -1934,6 +1975,7 @@ BuiltInFunction.remove = BuiltInFunction("remove")
 BuiltInFunction.concat = BuiltInFunction("concat")
 BuiltInFunction.len = BuiltInFunction("len")
 BuiltInFunction.run = BuiltInFunction("run")
+BuiltInFunction.use = BuiltInFunction("use")
 
 
 class Context:
@@ -2232,6 +2274,7 @@ global_symbol_table.set("removeIndex", BuiltInFunction.remove)
 global_symbol_table.set("concat", BuiltInFunction.concat)
 global_symbol_table.set("length", BuiltInFunction.len)
 global_symbol_table.set("run", BuiltInFunction.run)
+global_symbol_table.set("use", BuiltInFunction.use)
 
 
 def run(fn, text):

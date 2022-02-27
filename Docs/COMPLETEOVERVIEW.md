@@ -85,6 +85,12 @@ Single-Line functions have a *very slightly* different syntax.<br>
 After the name of the function you must have a `=>` before the function code.<br>
 Single-Line functions also do not require an `end` keyword.<br>
 
+## Using Other Files
+____
+As of v1.1 PeanutScript has official support for using multiple files!<br>
+Simply use the `use()` Built-In and pass in your file! An example of this can be seen in the `example` file.<br>
+Be aware that the `use()` function doesn't just access the file you pass in, it runs it too!<br>
+
 ## Ending Notes
 ____
 Thank you for taking the time to read this! If you have any questions about the syntax be sure to message me on Discord :)<br>
