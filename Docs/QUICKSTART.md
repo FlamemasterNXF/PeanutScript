@@ -14,7 +14,7 @@ Note: **Make sure you have Python 3 installed!**
 ## Running a Script
 ___
 If you did as this guide suggested and simply downloaded the "Dist" folder you will already have your first PeanutScript file!<br>
-This file is called `example.peanut` and contains a simple for loop and a function called "gwa". This function takes in a string input and gives an output based on that string! Feel free to try it out.<br><br>
+This file is called `example.peanut` and contains a simple for loop, a function called "gwa", and a pulls in a basic function from `example2.peanut`. The "gwa" function takes in a string input and gives an output based on that string, and "hi" simply prints some text! Feel free to try it out.<br><br>
 Note: **This part of the guide is assuming you use Windows 10.**<br>
 I have no other OSs available to test this on :( <br>
 If you successfully ran a PeanutScript file on another OS please let me know how you did it, and I will add it to this part of the guide!<br><br>

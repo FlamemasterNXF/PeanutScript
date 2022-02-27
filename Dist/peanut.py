@@ -1257,6 +1257,7 @@ class RTResult:
         self.func_return_value = None
         self.loop_should_continue = False
         self.loop_should_break = False
+        self.to_reverse_count = 0
         self.reset()
 
     def reset(self):
@@ -1265,6 +1266,7 @@ class RTResult:
         self.func_return_value = None
         self.loop_should_continue = False
         self.loop_should_break = False
+        self.to_reverse_count = 0
 
     def register(self, res):
         self.error = res.error
@@ -1272,6 +1274,12 @@ class RTResult:
         self.loop_should_continue = res.loop_should_continue
         self.loop_should_break = res.loop_should_break
         return res.value
+
+    def try_register(self, res):
+        if res.error:
+            self.to_reverse_count = res.advance_count
+            return None
+        return self.register(res)
 
     def success(self, value=None):
         self.reset()
@@ -1501,6 +1509,8 @@ class Number(Value):
 Number.null = Number(0)
 Number.false = Number(0)
 Number.true = Number(1)
+Number.infinity = Number(float('inf'))
+Number.negative_infinity = Number(float('-inf'))
 
 
 class String(Value):
@@ -1517,6 +1527,25 @@ class String(Value):
     def multed_by(self, other):
         if isinstance(other, Number):
             return String(self.value * other.value).set_context(self.context), None
+        else:
+            return None, Value.illegal_operation(self, other)
+
+    def divided_by(self, other):
+        if isinstance(other, Number):
+            try:
+                return String(self.value[other.value]).set_context(self.context), None
+            except:
+                return None, RTError(
+                    other.pos_start, other.pos_end,
+                    'Character at this index could not be obtained because the index is out of bounds',
+                    self.context
+                )
+        else:
+            return None, Value.illegal_operation(self, other)
+
+    def get_comparison_eq(self, other):
+        if isinstance(other, String):
+            return Number(int(self.value == other.value)).set_context(self.context), None
         else:
             return None, Value.illegal_operation(self, other)
 
@@ -1855,13 +1884,14 @@ class BuiltInFunction(BaseFunction):
 
     def execute_len(self, exec_ctx):
         array_ = exec_ctx.symbol_table.get('array')
-        if not isinstance(array_, Array):
+        if isinstance(array_, Array): return RTResult().success(Number(len(array_.elements)))
+        elif isinstance(array_, String): return RTResult().success(Number(len(array_.value)))
+        else:
             return RTResult().failure(RTError(
                 self.pos_start, self.pos_end,
-                "Argument must be an array",
+                "Argument must be an array or string",
                 exec_ctx
             ))
-        return RTResult().success(Number(len(array_.elements)))
 
     execute_len.arg_names = ['array']
 
@@ -1898,6 +1928,39 @@ class BuiltInFunction(BaseFunction):
 
     execute_run.arg_names = ['fn']
 
+    def execute_use(self, exec_ctx):
+        fn = exec_ctx.symbol_table.get('fn')
+        if not isinstance(fn, String):
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                "Argument must be a string",
+                exec_ctx
+            ))
+        fn = fn.value
+        if fn != re.search(".peanut$", fn):
+            fn += ".peanut"
+
+        try:
+            with open(fn, 'r') as f:
+                script = f.read()
+        except Exception as e:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                f"Failed to load script \"{fn}\"\n" + str(e),
+                exec_ctx
+            ))
+
+        _, error = run(fn, script)
+        if error:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                f"Failed to finish executing script \"{fn}\"\n" + error.as_string(),
+                exec_ctx
+            ))
+        return RTResult().success(String.no_return)
+
+    execute_use.arg_names = ['fn']
+
 
 BuiltInFunction.print = BuiltInFunction("print")
 BuiltInFunction.print_return = BuiltInFunction("print_return")
@@ -1914,6 +1977,7 @@ BuiltInFunction.remove = BuiltInFunction("remove")
 BuiltInFunction.concat = BuiltInFunction("concat")
 BuiltInFunction.len = BuiltInFunction("len")
 BuiltInFunction.run = BuiltInFunction("run")
+BuiltInFunction.use = BuiltInFunction("use")
 
 
 class Context:
@@ -2196,6 +2260,8 @@ global_symbol_table.set("NO_RETURN", String.no_return)
 global_symbol_table.set("ZERO", Number.null)
 global_symbol_table.set("FALSE_VALUE", Number.false)
 global_symbol_table.set("TRUE_VALUE", Number.true)
+global_symbol_table.set("INFINITY", Number.infinity)
+global_symbol_table.set("NEGATIVE_INF", Number.negative_infinity)
 global_symbol_table.set("print", BuiltInFunction.print)
 global_symbol_table.set("printReturn", BuiltInFunction.print_return)
 global_symbol_table.set("input", BuiltInFunction.input)
@@ -2212,6 +2278,7 @@ global_symbol_table.set("removeIndex", BuiltInFunction.remove)
 global_symbol_table.set("concat", BuiltInFunction.concat)
 global_symbol_table.set("length", BuiltInFunction.len)
 global_symbol_table.set("run", BuiltInFunction.run)
+global_symbol_table.set("use", BuiltInFunction.use)
 
 
 def run(fn, text):
