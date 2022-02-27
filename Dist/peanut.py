@@ -1,6 +1,7 @@
 import re
 import string
 import os
+from math import floor
 
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
@@ -120,6 +121,7 @@ TT_MINUS = 'MINUS'
 TT_MUL = 'MUL'
 TT_DIV = 'DIV'
 TT_POW = 'POW'
+TT_MOD = 'MOD'
 TT_EQ = 'EQ'
 TT_LPAREN = 'LPAREN'
 TT_RPAREN = 'RPAREN'
@@ -133,8 +135,6 @@ TT_LTE = 'LTE'
 TT_GTE = 'GTE'
 TT_COMMA = 'COMMA'
 TT_ARROW = 'ARROW'
-# TT_COMMENT = 'COMMENT'
-# TT_EOC = 'EOC'  # End of Comment
 TT_NEWLINE = 'NEWLINE'
 TT_EOF = 'EOF'
 
@@ -195,7 +195,7 @@ class Lexer:
     def make_tokens(self):
         tokens = []
 
-        while self.current_char != None:
+        while self.current_char is not None:
             if self.current_char in ' \t':
                 self.advance()
             elif self.current_char in ';\n':
@@ -223,6 +223,9 @@ class Lexer:
                 self.advance()
             elif self.current_char == '^':
                 tokens.append(Token(TT_POW, pos_start=self.pos))
+                self.advance()
+            elif self.current_char == '%':
+                tokens.append(Token(TT_MOD, pos_start=self.pos))
                 self.advance()
             elif self.current_char == '(':
                 tokens.append(Token(TT_LPAREN, pos_start=self.pos))
@@ -1048,7 +1051,7 @@ class Parser:
         return self.power()
 
     def term(self):
-        return self.BinaryOp(self.factor, (TT_MUL, TT_DIV))
+        return self.BinaryOp(self.factor, (TT_MUL, TT_DIV, TT_MOD))
 
     def arith_expr(self):
         return self.BinaryOp(self.term, (TT_PLUS, TT_MINUS))
@@ -1329,6 +1332,9 @@ class Value:
     def powed_by(self, other):
         return None, self.illegal_operation(other)
 
+    def modded(self, other):
+        return None, self.illegal_operation(other)
+
     def get_comparison_eq(self, other):
         return None, self.illegal_operation(other)
 
@@ -1405,8 +1411,19 @@ class Number(Value):
                     'Division by zero',
                     self.context
                 )
-
             return Number(self.value / other.value).set_context(self.context), None
+        else:
+            return None, Value.illegal_operation(self, other)
+
+    def modded_by(self, other):
+        if isinstance(other, Number):
+            if other.value == 0:
+                return None, RTError(
+                    other.pos_start, other.pos_end,
+                    'Division by zero',
+                    self.context
+                )
+            return Number(self.value - (other.value * floor(self.value/other.value))).set_context(self.context), None
         else:
             return None, Value.illegal_operation(self, other)
 
@@ -1977,6 +1994,8 @@ class Interpreter:
             result, error = left.divided_by(right)
         elif node.op_tok.type == TT_POW:
             result, error = left.pow(right)
+        elif node.op_tok.type == TT_MOD:
+            result, error = left.modded_by(right)
         elif node.op_tok.type == TT_EE:
             result, error = left.get_comparison_eq(right)
         elif node.op_tok.type == TT_NE:

@@ -27,6 +27,7 @@ Like any good language, PeanutScript comes with all the basic mathematical opera
 - \* : The multiplication operator. Simply use `value * value` to multiply the first value by the second! This also works for more than two values.
 - \ : The division operator. Simply use `value / value` to divide the first value by the second! This also works for more than two values.
 - ^ : The exponentiation operator. Simply use `value ^ value` to raise the first value to the second! This also works for more than two values.
+- % : The modulus operator. Simply use `value % value` to divide the first value by the second and return the remainder!
 - () : Parentheses! These can be used for order of operation purposes. Simply use `(mathematical operation)` to run that particular operation before all others!
 
 ## Comparisons
