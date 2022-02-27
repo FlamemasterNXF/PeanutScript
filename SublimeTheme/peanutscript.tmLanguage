@@ -64,7 +64,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(print|printReturn|input|inputInt|clear|cls|isNumber|isString|isArray|isFunction|append|removeIndex|concat|length|run)\b</string>
+			<string>\b(print|printReturn|input|inputInt|clear|cls|isNumber|isString|isArray|isFunction|append|removeIndex|concat|length|run|typeof)\b</string>
 			<key>name</key>
 			<string>support.function</string>
 		</dict>
