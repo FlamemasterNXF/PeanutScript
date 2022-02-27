@@ -16,7 +16,8 @@ Variables can be created simply using the `var` keyword, followed by a name for 
 Variables can have a new value assigned to them by re-using the same syntax as you used to create a variable, but using the name of an already created variable<br>
 ### Accessing a Variable
 Numbers and Strings can simply be accessed by typing the variable name.<br>
-To access a Variable at the index of an Array you have to do a bit more, but it's still simple. Simply type the Array's name, followed by `/`, and then the index you wish to access. Ex: `array / 0` for index 0.
+To access a Variable at the index of an Array you have to do a bit more, but it's still simple. Simply type the Array's name, followed by `/`, and then the index you wish to access. Ex: `array / 0` for index 0.<br>
+To access a certain character in a String simply type the String's name, followed by a `/`, and then the index of the character you wish to access. Ex `"hi" / 0` returns "h".<br> 
 
 ## Mathematical Operators
 ___
@@ -38,7 +39,7 @@ Note that booleans are returned in a binary form. 1 = True and 0 = False.<br>
 - if : A simple if statement. Contains all of these Comparisons.<br>Syntax: `if COMPARISON then SOMETHING`
 - elif : A special if statement that only runs after an if statement. `elif` can only be used an `if` or an `elif` and in a Multi-Line statement.
 - else : A default case for an if statement. The code in an `else` is only run if all prior `if` and `elif` statements return false.
-- == : Checks if one Number equals another.<br>Syntax: `n == x`
+- == : Checks if one Number or String equals another.<br>Syntax: `n == x`
 - and : Checks if two different conditions are true. `and` can be chained multiple times!<br>Syntax: `COMPARISON and COMPARISON`
 - or : Checks if one of two statements are true. `or` can be chained multiple times!<br>Syntax: `COMPARISON or COMPARISON`
 - not : Checks if one statement is not true.<br>Syntax: `not SOMETHING`

@@ -1520,6 +1520,25 @@ class String(Value):
         else:
             return None, Value.illegal_operation(self, other)
 
+    def divided_by(self, other):
+        if isinstance(other, Number):
+            try:
+                return String(self.value[other.value]).set_context(self.context), None
+            except:
+                return None, RTError(
+                    other.pos_start, other.pos_end,
+                    'Character at this index could not be obtained because the index is out of bounds',
+                    self.context
+                )
+        else:
+            return None, Value.illegal_operation(self, other)
+
+    def get_comparison_eq(self, other):
+        if isinstance(other, String):
+            return Number(int(self.value == other.value)).set_context(self.context), None
+        else:
+            return None, Value.illegal_operation(self, other)
+
     def is_true(self):
         return len(self.value) > 0
 
@@ -1865,6 +1884,19 @@ class BuiltInFunction(BaseFunction):
 
     execute_len.arg_names = ['array']
 
+    def execute_len_string(self, exec_ctx):
+        array_ = exec_ctx.symbol_table.get('array')
+        if isinstance(array_, Array): return RTResult().success(Number(len(array_.elements)))
+        elif isinstance(array_, String): return RTResult().success(Number(len(array_.value)))
+        else:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                "Argument must be an array or string",
+                exec_ctx
+            ))
+
+    execute_len_string.arg_names = ['array']
+
     def execute_run(self, exec_ctx):
         fn = exec_ctx.symbol_table.get('fn')
         if not isinstance(fn, String):
@@ -1913,6 +1945,7 @@ BuiltInFunction.append = BuiltInFunction("append")
 BuiltInFunction.remove = BuiltInFunction("remove")
 BuiltInFunction.concat = BuiltInFunction("concat")
 BuiltInFunction.len = BuiltInFunction("len")
+BuiltInFunction.len_string = BuiltInFunction("len_string")
 BuiltInFunction.run = BuiltInFunction("run")
 
 
@@ -2211,6 +2244,7 @@ global_symbol_table.set("append", BuiltInFunction.append)
 global_symbol_table.set("removeIndex", BuiltInFunction.remove)
 global_symbol_table.set("concat", BuiltInFunction.concat)
 global_symbol_table.set("length", BuiltInFunction.len)
+global_symbol_table.set("stringLength", BuiltInFunction.len_string)
 global_symbol_table.set("run", BuiltInFunction.run)
 
 
