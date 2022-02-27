@@ -11,6 +11,7 @@ Here is a simple complete list of them all :)<br>
 - isNumber() : Takes in any input and returns if that input is a number.
 - isString() : Takes in any input and returns if that input is a string.
 - isArray() : Takes in any input and returns if that input is an array.
+- isFunction() : Takes in any input and returns if that input is a function.
 - append() : Adds a value to an array. **May be broken, use `array + n` instead**
 - removeIndex() : Removes a value from an array at a specified index. **May be broken, use `array - n` instead**
 - concat() : Combines two or more arrays into one. **May be broken, use `array * array` instead**
