@@ -64,7 +64,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(print|printReturn|input|inputInt|clear|cls|isNumber|isString|isArray|isFunction|append|removeIndex|concat|length|run|typeof)\b</string>
+			<string>\b(print|printReturn|input|inputInt|clear|cls|isNumber|isString|isArray|isFunction|append|removeIndex|concat|length|run|typeof|use)\b</string>
 			<key>name</key>
 			<string>support.function</string>
 		</dict>
@@ -73,6 +73,12 @@
 			<string>\b(?i:(\d+e[\-\+]?\d+))</string>
 			<key>name</key>
 			<string>constant.numeric.float.peanut</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\b(INFINITY|NEGATIVE_INF|TRUE_VALUE|FALSE_VALUE)\b</string>
+			<key>name</key>
+			<string>constant.language</string>
 		</dict>
 		<dict>
 			<key>match</key>
