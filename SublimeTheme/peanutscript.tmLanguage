@@ -22,7 +22,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(for|return|until|while|break)\b</string>
+			<string>\b(for|return|until|while|break|continue)\b</string>
 			<key>name</key>
 			<string>keyword.control.flow.peanut</string>
 		</dict>
