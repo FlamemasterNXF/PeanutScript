@@ -16,6 +16,12 @@
 	<array>
 		<dict>
 			<key>match</key>
+			<string>(\#+[\S\s]*)</string>
+			<key>name</key>
+			<string>comment.line.peanut</string>
+		</dict>
+		<dict>
+			<key>match</key>
 			<string>\b(for|return|until|while|break)\b</string>
 			<key>name</key>
 			<string>keyword.control.flow.peanut</string>
