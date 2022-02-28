@@ -1783,19 +1783,19 @@ class BuiltInFunction(BaseFunction):
         is_number = isinstance(exec_ctx.symbol_table.get('value'), String)
         return RTResult().success(Number.true if is_number else Number.false)
 
-    execute_is_number.arg_names = ['value']
+    execute_is_string.arg_names = ['value']
 
     def execute_is_array(self, exec_ctx):
         is_number = isinstance(exec_ctx.symbol_table.get('value'), Array)
         return RTResult().success(Number.true if is_number else Number.false)
 
-    execute_is_number.arg_names = ['value']
+    execute_is_array.arg_names = ['value']
 
     def execute_is_function(self, exec_ctx):
         is_number = isinstance(exec_ctx.symbol_table.get('value'), BaseFunction)
         return RTResult().success(Number.true if is_number else Number.false)
 
-    execute_is_number.arg_names = ['value']
+    execute_is_function.arg_names = ['value']
 
     def execute_typeof(self, exec_ctx):
         is_number = isinstance(exec_ctx.symbol_table.get('value'), Number)
