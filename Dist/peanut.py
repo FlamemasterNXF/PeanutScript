@@ -2,6 +2,7 @@
 import re
 import string
 import os
+import time
 from math import floor
 
 DIGITS = '0123456789'
@@ -1896,6 +1897,11 @@ class BuiltInFunction(BaseFunction):
 
     execute_len.arg_names = ['array']
 
+    def execute_time(self, exec_ctx):
+        return RTResult().success(Number(time.time()))
+
+    execute_time.arg_names = []
+
     def execute_run(self, exec_ctx):
         fn = exec_ctx.symbol_table.get('fn')
         if not isinstance(fn, String):
@@ -1977,6 +1983,7 @@ BuiltInFunction.append = BuiltInFunction("append")
 BuiltInFunction.remove = BuiltInFunction("remove")
 BuiltInFunction.concat = BuiltInFunction("concat")
 BuiltInFunction.len = BuiltInFunction("len")
+BuiltInFunction.time = BuiltInFunction("time")
 BuiltInFunction.run = BuiltInFunction("run")
 BuiltInFunction.use = BuiltInFunction("use")
 
@@ -2278,6 +2285,7 @@ global_symbol_table.set("append", BuiltInFunction.append)
 global_symbol_table.set("removeIndex", BuiltInFunction.remove)
 global_symbol_table.set("concat", BuiltInFunction.concat)
 global_symbol_table.set("length", BuiltInFunction.len)
+global_symbol_table.set("time", BuiltInFunction.time)
 global_symbol_table.set("run", BuiltInFunction.run)
 global_symbol_table.set("use", BuiltInFunction.use)
 
