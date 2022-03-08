@@ -1369,7 +1369,8 @@ class Value:
         return None, self.illegal_operation(other)
 
     def notted(self, other):
-        return None, self.illegal_operation(other)
+        if other: return None, self.illegal_operation(other)
+        else: return None, self.illegal_operation(self)
 
     def execute(self, args):
         return RTResult().failure(self.illegal_operation())
@@ -1490,7 +1491,7 @@ class Number(Value):
         else:
             return None, Value.illegal_operation(self, other)
 
-    def notted(self, other):
+    def notted(self, other=None):
         return Number(1 if self.value == 0 else 0).set_context(self.context), None
 
     def copy(self):
