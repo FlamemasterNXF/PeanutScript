@@ -1370,8 +1370,10 @@ class Value:
         return None, self.illegal_operation(other)
 
     def notted(self, other):
-        if other: return None, self.illegal_operation(other)
-        else: return None, self.illegal_operation(self)
+        if other:
+            return None, self.illegal_operation(other)
+        else:
+            return None, self.illegal_operation(self)
 
     def execute(self, args):
         return RTResult().failure(self.illegal_operation())
@@ -1434,7 +1436,7 @@ class Number(Value):
                     'Division by zero',
                     self.context
                 )
-            return Number(self.value - (other.value * floor(self.value/other.value))).set_context(self.context), None
+            return Number(self.value - (other.value * floor(self.value / other.value))).set_context(self.context), None
         else:
             return None, Value.illegal_operation(self, other)
 
@@ -1446,54 +1448,54 @@ class Number(Value):
 
     def get_comparison_eq(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value == other.value)).set_context(self.context), None
+            return Bool(int(self.value == other.value)).set_context(self.context), None
         else:
             return None, Value.illegal_operation(self, other)
 
     def get_comparison_ne(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value != other.value)).set_context(self.context), None
+            return Bool(int(self.value != other.value)).set_context(self.context), None
         else:
             return None, Value.illegal_operation(self, other)
 
     def get_comparison_lt(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value < other.value)).set_context(self.context), None
+            return Bool(int(self.value < other.value)).set_context(self.context), None
         else:
             return None, Value.illegal_operation(self, other)
 
     def get_comparison_gt(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value > other.value)).set_context(self.context), None
+            return Bool(int(self.value > other.value)).set_context(self.context), None
         else:
             return None, Value.illegal_operation(self, other)
 
     def get_comparison_lte(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value <= other.value)).set_context(self.context), None
+            return Bool(int(self.value <= other.value)).set_context(self.context), None
         else:
             return None, Value.illegal_operation(self, other)
 
     def get_comparison_gte(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value >= other.value)).set_context(self.context), None
+            return Bool(int(self.value >= other.value)).set_context(self.context), None
         else:
             return None, Value.illegal_operation(self, other)
 
     def anded_by(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value and other.value)).set_context(self.context), None
+            return Bool(int(self.value and other.value)).set_context(self.context), None
         else:
             return None, Value.illegal_operation(self, other)
 
     def ored_by(self, other):
         if isinstance(other, Number):
-            return Number(int(self.value or other.value)).set_context(self.context), None
+            return Bool(int(self.value or other.value)).set_context(self.context), None
         else:
             return None, Value.illegal_operation(self, other)
 
     def notted(self, other=None):
-        return Number(1 if self.value == 0 else 0).set_context(self.context), None
+        return Bool(1 if self.value == 0 else 0).set_context(self.context), None
 
     def copy(self):
         copy = Number(self.value)
@@ -1547,7 +1549,7 @@ class String(Value):
 
     def get_comparison_eq(self, other):
         if isinstance(other, String):
-            return Number(int(self.value == other.value)).set_context(self.context), None
+            return Bool(int(self.value == other.value)).set_context(self.context), None
         else:
             return None, Value.illegal_operation(self, other)
 
@@ -1633,6 +1635,16 @@ class Array(Value):
 
     def __repr__(self):
         return f'[{", ".join([str(x) for x in self.elements])}]'
+
+
+class Bool(Value):
+    def __init__(self, value):
+        super().__init__()
+        self.value = value
+
+    def __repr__(self):
+        if self.value == 1: return str('True')
+        else: return str('False')
 
 
 class BaseFunction(Value):
@@ -1886,8 +1898,10 @@ class BuiltInFunction(BaseFunction):
 
     def execute_len(self, exec_ctx):
         array_ = exec_ctx.symbol_table.get('array')
-        if isinstance(array_, Array): return RTResult().success(Number(len(array_.elements)))
-        elif isinstance(array_, String): return RTResult().success(Number(len(array_.value)))
+        if isinstance(array_, Array):
+            return RTResult().success(Number(len(array_.elements)))
+        elif isinstance(array_, String):
+            return RTResult().success(Number(len(array_.value)))
         else:
             return RTResult().failure(RTError(
                 self.pos_start, self.pos_end,
@@ -1969,6 +1983,7 @@ class BuiltInFunction(BaseFunction):
     execute_use.arg_names = ['fn']
 
 
+# region BuiltIn Funcs
 BuiltInFunction.print = BuiltInFunction("print")
 BuiltInFunction.print_return = BuiltInFunction("print_return")
 BuiltInFunction.input = BuiltInFunction("input")
@@ -1987,6 +2002,8 @@ BuiltInFunction.time = BuiltInFunction("time")
 BuiltInFunction.run = BuiltInFunction("run")
 BuiltInFunction.use = BuiltInFunction("use")
 
+
+# endregion
 
 class Context:
     def __init__(self, display_name, parent=None, parent_entry_pos=None):
@@ -2263,6 +2280,7 @@ class Interpreter:
         return RTResult().success_break()
 
 
+# region BuiltIns
 global_symbol_table = SymbolTable()
 global_symbol_table.set("NO_RETURN", String.no_return)
 global_symbol_table.set("ZERO", Number.null)
@@ -2288,6 +2306,7 @@ global_symbol_table.set("length", BuiltInFunction.len)
 global_symbol_table.set("time", BuiltInFunction.time)
 global_symbol_table.set("run", BuiltInFunction.run)
 global_symbol_table.set("use", BuiltInFunction.use)
+# endregion
 
 
 def run(fn, text):
