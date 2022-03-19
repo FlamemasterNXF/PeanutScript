@@ -16,7 +16,13 @@
 	<array>
 		<dict>
 			<key>match</key>
-			<string>\b(for|return|until|while|break)\b</string>
+			<string>(\#+[\S\s]*)</string>
+			<key>name</key>
+			<string>comment.line.peanut</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\b(for|return|until|while|break|continue)\b</string>
 			<key>name</key>
 			<string>keyword.control.flow.peanut</string>
 		</dict>
@@ -46,13 +52,52 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(function)\b</string>
+			<string>\b(function)</string>
 			<key>name</key>
 			<string>storage.type.function.peanut</string>
 		</dict>
 		<dict>
+			<key>captures</key>
+			<dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.function.peanut</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>variable.parameter.function.peanut</string>
+				</dict>
+				<key>4</key>
+				<dict>
+					<key>name</key>
+					<string>constant.character.peanut</string>
+				</dict>
+				<key>5</key>
+				<dict>
+					<key>name</key>
+					<string>constant.character.peanut</string>
+				</dict>
+				<key>6</key>
+				<dict>
+					<key>name</key>
+					<string>constant.character.peanut</string>
+				</dict>
+				<key>7</key>
+				<dict>
+					<key>name</key>
+					<string>constant.character.peanut</string>
+				</dict>
+			</dict>
 			<key>match</key>
-			<string>\b(?i:(\d+\.\d*(e[\-\+]?\d+)?))(?=[^[:alpha:]_])</string>
+			<string>(?!(print|printReturn|input|inputInt|clear|cls|isNumber|isString|isArray|isFunction|append|removeIndex|concat|length|run|typeof|use))([[a-zA-Z0-9]])+((\(\))|(\()+([[A-Za-z0-9,]]*)+(\)))</string>
+			<key>name</key>
+			<string>entity.name.function.peanut</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\b(?i:(\d+\.\d*(e[\-\+]?\d+)))(?=[^[:alpha:]_])</string>
 			<key>name</key>
 			<string>constant.numeric.float.peanut</string>
 		</dict>
