@@ -2091,7 +2091,6 @@ class SymbolTable:
     def set(self, name, value, is_scoped=False):
         self.symbols[name] = value
         self.symbols_should_scope[name] = is_scoped
-        # print(f'{self.symbols_should_scope[name]}')
 
     def remove(self, name):
         del self.symbols[name]
@@ -2127,21 +2126,6 @@ class Interpreter:
         return res.success(
             Array(elements).set_context(context).set_pos(node.pos_start, node.pos_end)
         )
-
-    # def visit_VarAccessNode(self, node, context):
-    #    res = RTResult()
-    #    var_name = node.var_name_tok.value
-    #    value = global_symbol_table.get(var_name)
-
-    #    if not value:
-    #        return res.failure(RTError(
-    #            node.pos_start, node.pos_end,
-    #            f"'{var_name}' is not defined",
-    #            context
-    #        ))
-
-    #    value = value.copy().set_pos(node.pos_start, node.pos_end).set_context(context)
-    #    return res.success(value)
 
     def visit_VarAssignNode(self, node, context):
         res = RTResult()
