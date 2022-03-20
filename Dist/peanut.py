@@ -37,6 +37,8 @@ def string_with_arrows(text, pos_start, pos_end):
         if idx_end < 0: idx_end = len(text)
 
     return result.replace('\t', '')
+
+
 # endregion
 
 
@@ -92,6 +94,8 @@ class RTError(Error):
             ctx = ctx.parent
 
         return 'Trace:\n' + result
+
+
 # endregion
 
 
@@ -147,6 +151,7 @@ TT_EOF = 'EOF'
 
 KEYWORDS = [
     'var',
+    'scoped',
     'and',
     'or',
     'not',
@@ -164,6 +169,8 @@ KEYWORDS = [
     'continue',
     'break'
 ]
+
+
 # endregion
 
 
@@ -408,19 +415,27 @@ class ArrayNode:
         self.pos_end = pos_end
 
 
-class VarAccessNode:
-    def __init__(self, var_name_tok):
-        self.var_name_tok = var_name_tok
-        self.pos_start = self.var_name_tok.pos_start
-        self.pos_end = self.var_name_tok.pos_end
-
-
 class VarAssignNode:
     def __init__(self, var_name_tok, value_node):
         self.var_name_tok = var_name_tok
         self.value_node = value_node
         self.pos_start = self.var_name_tok.pos_start
         self.pos_end = self.value_node.pos_end
+
+
+class ScopedAssignNode:
+    def __init__(self, var_name_tok, value_node):
+        self.var_name_tok = var_name_tok
+        self.value_node = value_node
+        self.pos_start = self.var_name_tok.pos_start
+        self.pos_end = self.value_node.pos_end
+
+
+class AccessNode:
+    def __init__(self, var_name_tok):
+        self.var_name_tok = var_name_tok
+        self.pos_start = self.var_name_tok.pos_start
+        self.pos_end = self.var_name_tok.pos_end
 
 
 class BinaryOpNode:
@@ -524,6 +539,8 @@ class BreakNode:
     def __init__(self, pos_start, pos_end):
         self.pos_start = pos_start
         self.pos_end = pos_end
+
+
 # endregion
 
 
@@ -607,7 +624,7 @@ class Parser:
         elif tok.type == TT_IDENTIFIER:
             res.register_advancement()
             self.advance()
-            return res.success(VarAccessNode(tok))
+            return res.success(AccessNode(tok))
 
         elif tok.type == TT_LPAREN:
             res.register_advancement()
@@ -1231,6 +1248,32 @@ class Parser:
             if res.error: return res
             return res.success(VarAssignNode(var_name, expr))
 
+        if self.current_tok.matches(TT_KEYWORD, 'scoped'):
+            res.register_advancement()
+            self.advance()
+
+            if self.current_tok.type != TT_IDENTIFIER:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end,
+                    "Expected identifier"
+                ))
+
+            var_name = self.current_tok
+            res.register_advancement()
+            self.advance()
+
+            if self.current_tok.type != TT_EQ:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end,
+                    "Expected '='"
+                ))
+
+            res.register_advancement()
+            self.advance()
+            expr = res.register(self.expression())
+            if res.error: return res
+            return res.success(ScopedAssignNode(var_name, expr))
+
         node = res.register(self.BinaryOp(self.comp_expr, ((TT_KEYWORD, 'and'), (TT_KEYWORD, 'or'))))
 
         if res.error:
@@ -1652,8 +1695,10 @@ class Bool(Value):
         self.value = value
 
     def __repr__(self):
-        if self.value == 1: return str('True')
-        else: return str('False')
+        if self.value == 1:
+            return str('True')
+        else:
+            return str('False')
 
 
 class BaseFunction(Value):
@@ -1990,6 +2035,8 @@ class BuiltInFunction(BaseFunction):
         return RTResult().success(String.no_return)
 
     execute_use.arg_names = ['fn']
+
+
 # endregion
 
 
@@ -2026,6 +2073,7 @@ class Context:
 class SymbolTable:
     def __init__(self, parent=None):
         self.symbols = {}
+        self.symbols_should_scope = {}
         self.parent = parent
 
     def get(self, name):
@@ -2034,8 +2082,16 @@ class SymbolTable:
             return self.parent.get(name)
         return value
 
-    def set(self, name, value):
+    def getScope(self, name):
+        should_scope = self.symbols_should_scope.get(name, None)
+        if should_scope is None and self.parent:
+            return self.parent.get(name)
+        return should_scope
+
+    def set(self, name, value, is_scoped=False):
         self.symbols[name] = value
+        self.symbols_should_scope[name] = is_scoped
+        # print(f'{self.symbols_should_scope[name]}')
 
     def remove(self, name):
         del self.symbols[name]
@@ -2072,20 +2128,20 @@ class Interpreter:
             Array(elements).set_context(context).set_pos(node.pos_start, node.pos_end)
         )
 
-    def visit_VarAccessNode(self, node, context):
-        res = RTResult()
-        var_name = node.var_name_tok.value
-        value = global_symbol_table.get(var_name)
+    # def visit_VarAccessNode(self, node, context):
+    #    res = RTResult()
+    #    var_name = node.var_name_tok.value
+    #    value = global_symbol_table.get(var_name)
 
-        if not value:
-            return res.failure(RTError(
-                node.pos_start, node.pos_end,
-                f"'{var_name}' is not defined",
-                context
-            ))
+    #    if not value:
+    #        return res.failure(RTError(
+    #            node.pos_start, node.pos_end,
+    #            f"'{var_name}' is not defined",
+    #            context
+    #        ))
 
-        value = value.copy().set_pos(node.pos_start, node.pos_end).set_context(context)
-        return res.success(value)
+    #    value = value.copy().set_pos(node.pos_start, node.pos_end).set_context(context)
+    #    return res.success(value)
 
     def visit_VarAssignNode(self, node, context):
         res = RTResult()
@@ -2093,7 +2149,39 @@ class Interpreter:
         value = res.register(self.visit(node.value_node, context))
         if res.should_return(): return res
 
-        global_symbol_table.set(var_name, value)
+        global_symbol_table.set(var_name, value, False)
+        return res.success(value)
+
+    def visit_ScopedAssignNode(self, node, context):
+        res = RTResult()
+        var_name = node.var_name_tok.value
+        value = res.register(self.visit(node.value_node, context))
+        if res.should_return(): return res
+
+        if context.parent is None: locked_symbol_table.set(var_name, value, True)
+        else: context.symbol_table.set(var_name, value, True)
+        return res.success(value)
+
+    def visit_AccessNode(self, node, context):
+        res = RTResult()
+        var_name = node.var_name_tok.value
+        value = context.symbol_table.get(var_name)
+        should_scope = context.symbol_table.getScope(var_name)
+
+        if context.parent is None:
+            value = locked_symbol_table.get(var_name)
+
+        if not value:
+            if should_scope is False:
+                value = global_symbol_table.get(var_name)
+            else:
+                return res.failure(RTError(
+                    node.pos_start, node.pos_end,
+                    f"'{var_name}' is not defined or not in this scope.",
+                    context
+                ))
+
+        value = value.copy().set_pos(node.pos_start, node.pos_end).set_context(context)
         return res.success(value)
 
     def visit_BinaryOpNode(self, node, context):
@@ -2291,6 +2379,7 @@ class Interpreter:
 
 
 # region BuiltIns
+locked_symbol_table = SymbolTable()
 global_symbol_table = SymbolTable()
 global_symbol_table.set("NO_RETURN", String.no_return)
 global_symbol_table.set("ZERO", Number.null)
@@ -2318,6 +2407,8 @@ global_symbol_table.set("length", BuiltInFunction.len)
 global_symbol_table.set("time", BuiltInFunction.time)
 global_symbol_table.set("run", BuiltInFunction.run)
 global_symbol_table.set("use", BuiltInFunction.use)
+
+
 # endregion
 
 

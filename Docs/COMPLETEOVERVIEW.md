@@ -18,6 +18,10 @@ Variables can have a new value assigned to them by re-using the same syntax as y
 Numbers and Strings can simply be accessed by typing the variable name.<br>
 To access a Variable at the index of an Array you have to do a bit more, but it's still simple. Simply type the Array's name, followed by `/`, and then the index you wish to access. Ex: `array / 0` for index 0.<br>
 To access a certain character in a String simply type the String's name, followed by a `/`, and then the index of the character you wish to access. Ex `"hi" / 0` returns "h".<br> 
+### Scoped Variables
+If you'd like to create a variable that only exists within the scope of its declaration you can use the `scoped` keyword instead!<br>
+They work the same as normal Variables but cannot be access outside the scope they are declared in. Be sure to use the `scoped` keyword when re-assigning them as well!<br>
+Be warned that if you create a `scoped` Variable and a `var` Variable in the same context they will override each other!
 
 ## Mathematical Operators
 ___
