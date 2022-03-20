@@ -5,6 +5,7 @@
 - Creating an Array variable: `var myVar = [n, x]`
 - Re-assigning a variable: `var myVar = n`
 - Accessing a variable: `myVar`
+- Creating a Scoped variable: `scoped myVar...`
 ### Mathematical Operations
 - Addition: `1 + 1`
 - Subtraction: `1 - 1`
