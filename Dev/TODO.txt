@@ -1,6 +1,0 @@
-Major Changes (v1):
-    DONE
-Syntax Changes (v1+):
-    Add & and | as alternates to AND and OR
-    Make boolean outputs display as True(1) or False(0)
-    Change get index syntax from (array[]/n) to (array[n])
