@@ -1,4 +1,5 @@
 #!/bin/python3
+# region Imports
 import re
 import string
 import os
@@ -36,8 +37,10 @@ def string_with_arrows(text, pos_start, pos_end):
         if idx_end < 0: idx_end = len(text)
 
     return result.replace('\t', '')
+# endregion
 
 
+# region Errors and Error Types
 class Error:
     def __init__(self, pos_start, pos_end, error_name, details):
         self.pos_start = pos_start
@@ -89,6 +92,7 @@ class RTError(Error):
             ctx = ctx.parent
 
         return 'Trace:\n' + result
+# endregion
 
 
 class Position:
@@ -113,6 +117,7 @@ class Position:
         return Position(self.idx, self.ln, self.col, self.fn, self.ftxt)
 
 
+# region Tokens and Keywords
 TT_INT = 'INT'
 TT_FLOAT = 'FLOAT'
 TT_STRING = 'STRING'
@@ -159,6 +164,7 @@ KEYWORDS = [
     'continue',
     'break'
 ]
+# endregion
 
 
 class Token:
@@ -374,6 +380,7 @@ class Lexer:
         self.advance()
 
 
+# region Nodes
 class NumberNode:
     def __init__(self, tok):
         self.tok = tok
@@ -517,6 +524,7 @@ class BreakNode:
     def __init__(self, pos_start, pos_end):
         self.pos_start = pos_start
         self.pos_end = pos_end
+# endregion
 
 
 class ParseResult:
@@ -1313,6 +1321,7 @@ class RTResult:
         )
 
 
+# region Data Types
 class Value:
     def __init__(self):
         self.set_pos()
@@ -1981,6 +1990,7 @@ class BuiltInFunction(BaseFunction):
         return RTResult().success(String.no_return)
 
     execute_use.arg_names = ['fn']
+# endregion
 
 
 # region BuiltIn Funcs
@@ -2065,7 +2075,7 @@ class Interpreter:
     def visit_VarAccessNode(self, node, context):
         res = RTResult()
         var_name = node.var_name_tok.value
-        value = context.symbol_table.get(var_name)
+        value = global_symbol_table.get(var_name)
 
         if not value:
             return res.failure(RTError(
@@ -2083,7 +2093,7 @@ class Interpreter:
         value = res.register(self.visit(node.value_node, context))
         if res.should_return(): return res
 
-        context.symbol_table.set(var_name, value)
+        global_symbol_table.set(var_name, value)
         return res.success(value)
 
     def visit_BinaryOpNode(self, node, context):
@@ -2286,6 +2296,8 @@ global_symbol_table.set("NO_RETURN", String.no_return)
 global_symbol_table.set("ZERO", Number.null)
 global_symbol_table.set("FALSE_VALUE", Number.false)
 global_symbol_table.set("TRUE_VALUE", Number.true)
+global_symbol_table.set("false", Number.false)
+global_symbol_table.set("true", Number.true)
 global_symbol_table.set("INFINITY", Number.infinity)
 global_symbol_table.set("NEGATIVE_INF", Number.negative_infinity)
 global_symbol_table.set("print", BuiltInFunction.print)
