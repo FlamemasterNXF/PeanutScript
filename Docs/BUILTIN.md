@@ -21,6 +21,10 @@ Here is a simple complete list of them all :)<br>
 - continue : Skips an iteration of a loop.
 - return() : Returns a value. Can be a string or a number.
 - time() : Returns the current Unix Timestamp.
+- b64Encode() : Takes in a string and returns a Base64 Encoded version of that string.
+- b64Decode() : Takes in a string and returns a Base64 Decoded version of that string.
+- toUnicode() : Takes in a number and returns the Unicode character associated with it.
+- fromUnicode() : Takes in a Unicode character and returns the number associated with it.
 - run() : Takes in a string and runs the PeanutScript file with the same name.
 - use() : Takes in a string and allows the file it is used in to access the PeanutScript file with the same name. Also runs that file.
 

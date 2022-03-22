@@ -12,6 +12,7 @@ These types are dynamically decided based on the value of the Variable. These ty
 
 ### Creating a Variable
 Variables can be created simply using the `var` keyword, followed by a name for the Variable, then a `=`, and then finally a value for the Variable.<br>
+Note that `let` can be used instead of `var`!<br>
 ### Re-assignment 
 Variables can have a new value assigned to them by re-using the same syntax as you used to create a variable, but using the name of an already created variable<br>
 ### Accessing a Variable

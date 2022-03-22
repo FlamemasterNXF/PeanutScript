@@ -1281,7 +1281,7 @@ class Parser:
         if res.error:
             return res.failure(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                "Expected 'var', 'if', 'for', 'while', 'function', int, float, identifier, '+', '-', '(', '[' or 'not'"
+                "Expected 'var', 'let', 'if', 'for', 'while', 'function', int, float, identifier, '+', '-', '(', '[' or 'not'"
             ))
 
         return res.success(node)
