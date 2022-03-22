@@ -4,6 +4,7 @@ import re
 import string
 import os
 import time
+import base64
 from math import floor
 
 DIGITS = '0123456789'
@@ -1970,6 +1971,45 @@ class BuiltInFunction(BaseFunction):
 
     execute_time.arg_names = []
 
+    def execute_base64_encode(self, exec_ctx):
+        string_ = exec_ctx.symbol_table.get('string')
+        if isinstance(string_, String):
+            string_converted = str(string_)
+            string_bytes = string_converted.encode('ascii')
+            base64_bytes = base64.b64encode(string_bytes)
+            base64_string = base64_bytes.decode('ascii')
+            return RTResult().success(String(base64_string))
+        else:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                "Argument must be a string",
+                exec_ctx
+            ))
+
+    execute_base64_encode.arg_names = ['string']
+
+    def execute_base64_decode(self, exec_ctx):
+        string_ = exec_ctx.symbol_table.get('string')
+        if isinstance(string_, String):
+            string_converted = str(string_)
+
+            string_bytes = string_converted.encode('ascii')
+            base64_bytes = base64.b64encode(string_bytes)
+            base64_string = base64_bytes.decode('ascii')
+
+            string_bytes_decode = base64_string.encode('ascii')
+            base64_bytes_decode = base64.b64decode(string_bytes_decode)
+            base64_string_decode = base64_bytes_decode.decode('ascii')
+            return RTResult().success(String(base64_string_decode))
+        else:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                "Argument must be a string",
+                exec_ctx
+            ))
+
+    execute_base64_decode.arg_names = ['string']
+
     def execute_run(self, exec_ctx):
         fn = exec_ctx.symbol_table.get('fn')
         if not isinstance(fn, String):
@@ -2056,6 +2096,8 @@ BuiltInFunction.remove = BuiltInFunction("remove")
 BuiltInFunction.concat = BuiltInFunction("concat")
 BuiltInFunction.len = BuiltInFunction("len")
 BuiltInFunction.time = BuiltInFunction("time")
+BuiltInFunction.base64_encode = BuiltInFunction("base64_encode")
+BuiltInFunction.base64_decode = BuiltInFunction("base64_decode")
 BuiltInFunction.run = BuiltInFunction("run")
 BuiltInFunction.use = BuiltInFunction("use")
 
@@ -2373,6 +2415,7 @@ global_symbol_table.set("false", Number.false)
 global_symbol_table.set("true", Number.true)
 global_symbol_table.set("INFINITY", Number.infinity)
 global_symbol_table.set("NEGATIVE_INF", Number.negative_infinity)
+# region Functions
 global_symbol_table.set("print", BuiltInFunction.print)
 global_symbol_table.set("printReturn", BuiltInFunction.print_return)
 global_symbol_table.set("input", BuiltInFunction.input)
@@ -2389,10 +2432,11 @@ global_symbol_table.set("removeIndex", BuiltInFunction.remove)
 global_symbol_table.set("concat", BuiltInFunction.concat)
 global_symbol_table.set("length", BuiltInFunction.len)
 global_symbol_table.set("time", BuiltInFunction.time)
+global_symbol_table.set("b64Encode", BuiltInFunction.base64_encode)
+global_symbol_table.set("b64Decode", BuiltInFunction.base64_decode)
 global_symbol_table.set("run", BuiltInFunction.run)
 global_symbol_table.set("use", BuiltInFunction.use)
-
-
+# endregion
 # endregion
 
 
