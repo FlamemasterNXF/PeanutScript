@@ -152,6 +152,7 @@ TT_EOF = 'EOF'
 
 KEYWORDS = [
     'var',
+    'let',
     'scoped',
     'and',
     'or',
@@ -1223,7 +1224,7 @@ class Parser:
     def expression(self):
         res = ParseResult()
 
-        if self.current_tok.matches(TT_KEYWORD, 'var'):
+        if self.current_tok.matches(TT_KEYWORD, 'var') or self.current_tok.matches(TT_KEYWORD, 'let'):
             res.register_advancement()
             self.advance()
 
