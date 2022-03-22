@@ -1559,6 +1559,9 @@ class Number(Value):
     def is_true(self):
         return self.value != 0
 
+    def __int__(self):
+        return int(self.value)
+
     def __repr__(self):
         return str(self.value)
 
@@ -2010,6 +2013,44 @@ class BuiltInFunction(BaseFunction):
 
     execute_base64_decode.arg_names = ['string']
 
+    def execute_number_to_unicode(self, exec_ctx):
+        number_ = exec_ctx.symbol_table.get('number')
+        if isinstance(number_, Number):
+            if int(number_) > 1111998:
+                return RTResult().failure(RTError(
+                    self.pos_start, self.pos_end,
+                    "Argument must be a Number less than 1111998",
+                    exec_ctx
+                ))
+            else: return RTResult().success(String(chr(int(number_))))
+        else:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                "Argument must be a Number less than 1111998",
+                exec_ctx
+            ))
+
+    execute_number_to_unicode.arg_names = ['number']
+
+    def execute_unicode_to_number(self, exec_ctx):
+        string_ = exec_ctx.symbol_table.get('string')
+        if isinstance(string_, String):
+            if len(str(string_)) > 1:
+                return RTResult().failure(RTError(
+                    self.pos_start, self.pos_end,
+                    "Argument must be a 1-Character String",
+                    exec_ctx
+                ))
+            else: return RTResult().success(Number(ord(str(string_))))
+        else:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                "Argument must be a 1-Character String",
+                exec_ctx
+            ))
+
+    execute_unicode_to_number.arg_names = ['string']
+
     def execute_run(self, exec_ctx):
         fn = exec_ctx.symbol_table.get('fn')
         if not isinstance(fn, String):
@@ -2098,6 +2139,8 @@ BuiltInFunction.len = BuiltInFunction("len")
 BuiltInFunction.time = BuiltInFunction("time")
 BuiltInFunction.base64_encode = BuiltInFunction("base64_encode")
 BuiltInFunction.base64_decode = BuiltInFunction("base64_decode")
+BuiltInFunction.number_to_unicode = BuiltInFunction("number_to_unicode")
+BuiltInFunction.unicode_to_number = BuiltInFunction("unicode_to_number")
 BuiltInFunction.run = BuiltInFunction("run")
 BuiltInFunction.use = BuiltInFunction("use")
 
@@ -2184,8 +2227,10 @@ class Interpreter:
         value = res.register(self.visit(node.value_node, context))
         if res.should_return(): return res
 
-        if context.parent is None: locked_symbol_table.set(var_name, value, True)
-        else: context.symbol_table.set(var_name, value, True)
+        if context.parent is None:
+            locked_symbol_table.set(var_name, value, True)
+        else:
+            context.symbol_table.set(var_name, value, True)
         return res.success(value)
 
     def visit_AccessNode(self, node, context):
@@ -2434,8 +2479,12 @@ global_symbol_table.set("length", BuiltInFunction.len)
 global_symbol_table.set("time", BuiltInFunction.time)
 global_symbol_table.set("b64Encode", BuiltInFunction.base64_encode)
 global_symbol_table.set("b64Decode", BuiltInFunction.base64_decode)
+global_symbol_table.set("toUnicode", BuiltInFunction.number_to_unicode)
+global_symbol_table.set("fromUnicode", BuiltInFunction.unicode_to_number)
 global_symbol_table.set("run", BuiltInFunction.run)
 global_symbol_table.set("use", BuiltInFunction.use)
+
+
 # endregion
 # endregion
 
