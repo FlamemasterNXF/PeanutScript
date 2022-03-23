@@ -1276,6 +1276,23 @@ class Parser:
             if res.error: return res
             return res.success(ScopedAssignNode(var_name, expr))
 
+        if self.current_tok.type == TT_IDENTIFIER:
+            tok = self.current_tok
+            safe_var_name = str(tok).replace("IDENTIFIER:", "")
+            if global_symbol_table.varCheck(safe_var_name):
+                var_name = self.current_tok
+                res.register_advancement()
+                self.advance()
+
+                if self.current_tok.type != TT_EQ:
+                    return res.success(AccessNode(var_name))
+
+                res.register_advancement()
+                self.advance()
+                expr = res.register(self.expression())
+                if res.error: return res
+                return res.success(VarAssignNode(var_name, expr))
+
         node = res.register(self.BinaryOp(self.comp_expr, ((TT_KEYWORD, 'and'), (TT_KEYWORD, 'or'))))
 
         if res.error:
@@ -2160,6 +2177,7 @@ class SymbolTable:
     def __init__(self, parent=None):
         self.symbols = {}
         self.symbols_should_scope = {}
+        self.symbols_are_vars = {}
         self.parent = parent
 
     def get(self, name):
@@ -2174,9 +2192,16 @@ class SymbolTable:
             return self.parent.get(name)
         return should_scope
 
-    def set(self, name, value, is_scoped=False):
+    def varCheck(self, name):
+        is_var = self.symbols_are_vars.get(name, None)
+        if is_var is None and self.parent:
+            return self.parent.get(name)
+        return is_var
+
+    def set(self, name, value, is_var=False, is_scoped=False):
         self.symbols[name] = value
         self.symbols_should_scope[name] = is_scoped
+        self.symbols_are_vars[name] = is_var
 
     def remove(self, name):
         del self.symbols[name]
@@ -2219,7 +2244,7 @@ class Interpreter:
         value = res.register(self.visit(node.value_node, context))
         if res.should_return(): return res
 
-        global_symbol_table.set(var_name, value, False)
+        global_symbol_table.set(var_name, value, True, False)
         return res.success(value)
 
     def visit_ScopedAssignNode(self, node, context):
@@ -2229,9 +2254,9 @@ class Interpreter:
         if res.should_return(): return res
 
         if context.parent is None:
-            locked_symbol_table.set(var_name, value, True)
+            locked_symbol_table.set(var_name, value, True, True)
         else:
-            context.symbol_table.set(var_name, value, True)
+            context.symbol_table.set(var_name, value, True, True)
         return res.success(value)
 
     def visit_AccessNode(self, node, context):
