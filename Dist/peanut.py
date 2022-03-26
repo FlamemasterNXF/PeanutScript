@@ -1277,6 +1277,23 @@ class Parser:
             if res.error: return res
             return res.success(ScopedAssignNode(var_name, expr))
 
+        if self.current_tok.type == TT_IDENTIFIER:
+            tok = self.current_tok
+            safe_var_name = str(tok).replace("IDENTIFIER:", "")
+            if global_symbol_table.varCheck(safe_var_name):
+                var_name = self.current_tok
+                res.register_advancement()
+                self.advance()
+
+                if self.current_tok.type not in possible_ops:
+                    return res.success(AccessNode(var_name))
+
+                res.register_advancement()
+                self.advance()
+                expr = res.register(self.expression())
+                if res.error: return res
+                return res.success(VarAssignNode(var_name, expr))
+
         node = res.register(self.BinaryOp(self.comp_expr, ((TT_KEYWORD, 'and'), (TT_KEYWORD, 'or'))))
 
         if res.error:
