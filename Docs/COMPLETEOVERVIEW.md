@@ -14,8 +14,7 @@ These types are dynamically decided based on the value of the Variable. These ty
 Variables can be created simply using the `var` keyword, followed by a name for the Variable, then a `=`, and then finally a value for the Variable.<br>
 Note that `let` can be used instead of `var`!<br>
 ### Re-assignment 
-Variables can have a new value assigned to them by typing the variable's name, followed by a `=` and the new value!<br>
-To ensure type safety, this is not true for Scoped variables. Read more about this in the Scoped Variables section.<br>
+Variables can have a new value assigned to them by using the same syntax originally used to create them!<br>
 ### Accessing a Variable
 Numbers and Strings can simply be accessed by typing the variable name.<br>
 To access a Variable at the index of an Array you have to do a bit more, but it's still simple. Simply type the Array's name, followed by `/`, and then the index you wish to access. Ex: `array / 0` for index 0.<br>
@@ -23,7 +22,6 @@ To access a certain character in a String simply type the String's name, followe
 ### Scoped Variables
 If you'd like to create a variable that only exists within the scope of its declaration you can use the `scoped` keyword instead!<br>
 They work the same as normal Variables but cannot be access outside the scope they are declared in.<br>
-Scoped variables cannot be re-assigned the same way as normal variables! Be sure to use the `scoped` keyword when re-assigning them as well!<br>
 Be warned that if you create a `scoped` Variable and a `var` Variable in the same context the `var` will override the `scoped`!<br>
 
 ## Mathematical Operators
