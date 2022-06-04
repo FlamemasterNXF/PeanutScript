@@ -5,9 +5,8 @@ Here is a simple complete list of them all :)<br>
 - print() : Good ol' print. Can take in a string or a number.
 - printReturn() : Prints and returns a number or string.
 - input() : Takes a string input from the user and returns it.
-- inputInt() : Takes a number input from the user and returns it.
-- clear() : Clears the console. **May be broken**
-- cls() : Clears the console. **May be broken**
+- inputNumber() : Takes a number input from the user and returns it.
+- cls() : Clears the console.
 - isNumber() : Takes in any input and returns if that input is a number.
 - isString() : Takes in any input and returns if that input is a string.
 - isArray() : Takes in any input and returns if that input is an array.

@@ -1,5 +1,5 @@
 #!/bin/python3
-# region Imports
+# region Imports + Constants
 import re
 import string
 import os
@@ -10,6 +10,7 @@ from math import floor
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
 LETTERS_DIGITS = LETTERS + DIGITS
+VERSION_NUM = '1.2.4'
 
 
 def string_with_arrows(text, pos_start, pos_end):
@@ -38,6 +39,10 @@ def string_with_arrows(text, pos_start, pos_end):
         if idx_end < 0: idx_end = len(text)
 
     return result.replace('\t', '')
+
+
+def containsAny(text, chars):
+    return 1 in [c in text for c in chars]
 
 
 # endregion
@@ -1832,14 +1837,14 @@ class BuiltInFunction(BaseFunction):
     def execute_input_int(self, exec_ctx):
         while True:
             text = input()
-            try:
-                number = int(text)
+            if not containsAny(text, LETTERS):
+                number = Number(text)
                 break
-            except:
-                print(f"'{text}' must be an integer")
-            return RTResult().success(Number(number))
+            else:
+                print(f"Input must be a Number!")
+        return RTResult().success(number)
 
-    execute_input.arg_names = []
+    execute_input_int.arg_names = []
 
     def execute_clear(self, exec_ctx):
         os.system('cls' if os.name == 'windows' else 'clear')
@@ -2024,7 +2029,8 @@ class BuiltInFunction(BaseFunction):
                     "Argument must be a Number less than 1111998",
                     exec_ctx
                 ))
-            else: return RTResult().success(String(chr(int(number_))))
+            else:
+                return RTResult().success(String(chr(int(number_))))
         else:
             return RTResult().failure(RTError(
                 self.pos_start, self.pos_end,
@@ -2043,7 +2049,8 @@ class BuiltInFunction(BaseFunction):
                     "Argument must be a 1-Character String",
                     exec_ctx
                 ))
-            else: return RTResult().success(Number(ord(str(string_))))
+            else:
+                return RTResult().success(Number(ord(str(string_))))
         else:
             return RTResult().failure(RTError(
                 self.pos_start, self.pos_end,
@@ -2474,8 +2481,7 @@ global_symbol_table.set("NEGATIVE_INF", Number.negative_infinity)
 global_symbol_table.set("print", BuiltInFunction.print)
 global_symbol_table.set("printReturn", BuiltInFunction.print_return)
 global_symbol_table.set("input", BuiltInFunction.input)
-global_symbol_table.set("inputInt", BuiltInFunction.input_int)
-global_symbol_table.set("clear", BuiltInFunction.clear)
+global_symbol_table.set("inputNumber", BuiltInFunction.input_int)
 global_symbol_table.set("cls", BuiltInFunction.clear)
 global_symbol_table.set("isNumber", BuiltInFunction.is_number)
 global_symbol_table.set("isString", BuiltInFunction.is_string)
