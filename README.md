@@ -1,4 +1,4 @@
-# PeanutScript
+# PeanutScript v1.2.4
 PeanutScript: A passion project programming language by FlamemasterNXF<br>
 [Read the Documentation!](DOCS.md) <br>
 [Get the Files!](Dist) <br>
