@@ -10,6 +10,11 @@ These types are dynamically decided based on the value of the Variable. These ty
 - String: A simple input of letters.<br>Ex: `var abcd = "abcd"`
 - Array: A list of many Number or String values.<br>Ex: `var abcd = ["a","b","c","d"]`<br>
 
+### String Interpolation
+As mentioned above, Strings are simple combinations of letters.<br>
+However, using String Interpolation, you can display variables and even do Mathematical Operations inside a String!<br>
+The syntax is a simple extension of usual Strings! Simply putting `${}` anywhere within a String will allow you to put whatever code you want within the curly braces.
+
 ### Creating a Variable
 Variables can be created simply using the `var` keyword, followed by a name for the Variable, then a `=`, and then finally a value for the Variable.<br>
 Note that `let` can be used instead of `var`!<br>

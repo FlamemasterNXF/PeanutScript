@@ -208,9 +208,11 @@ class Lexer:
         self.text = text
         self.pos = Position(-1, 0, -1, fn, text)
         self.current_char = None
+        self.previous_char = None
         self.advance()
 
     def advance(self):
+        self.previous_char = self.current_char
         self.pos.advance(self.current_char)
         self.current_char = self.text[self.pos.idx] if self.pos.idx < len(self.text) else None
 
@@ -306,11 +308,26 @@ class Lexer:
         string = ''
         pos_start = self.pos.copy()
         escape_character = False
+        code = ''
+        code_result = None
         self.advance()
+
+        if self.current_char == '$' and self.previous_char != '\\':
+            self.advance()
+            if self.current_char == '{':
+                self.advance()
+                while self.current_char != '}':
+                    new_code = code + self.current_char
+                    code = new_code
+                    self.advance()
+                self.advance()
+                code_result = run_pretty('INTERPOLATION', code)
+                string += str(code_result)
 
         escape_characters = {
             'n': '\n',
-            't': '\t'
+            't': '\t',
+            '$': '\$'
         }
 
         while self.current_char != None and (self.current_char != '"' or escape_character):
@@ -323,6 +340,18 @@ class Lexer:
                     string += self.current_char
             self.advance()
             escape_character = False
+
+            if self.current_char == '$' and self.previous_char != '\\':
+                self.advance()
+                if self.current_char == '{':
+                    self.advance()
+                    while self.current_char != '}':
+                        new_code = code + self.current_char
+                        code = new_code
+                        self.advance()
+                    self.advance()
+                    code_result = run_pretty('INTERPOLATION', code)
+                    string += str(code_result)
 
         self.advance()
         return Token(TT_STRING, string, pos_start, self.pos)
@@ -1628,6 +1657,15 @@ class String(Value):
     def display_without_quotes(self):
         return self.value
 
+    def __getitem__(self, items):
+        return type(items), items
+
+    def __len__(self):
+        count = 0
+        for i in self.value:
+            count += 1
+        return count
+
     def __str__(self):
         return self.value
 
@@ -2520,3 +2558,20 @@ def run(fn, text):
     result = interpreter.visit(ast.node, context)
 
     return result.value, result.error
+
+
+def run_pretty(fn, text):
+    lexer = Lexer(fn, text)
+    tokens, error = lexer.make_tokens()
+    if error: return None, error
+
+    parser = Parser(tokens)
+    ast = parser.parse()
+    if ast.error: return None, ast.error
+
+    interpreter = Interpreter()
+    context = Context('BASE_LEVEL_SCRIPT')
+    context.symbol_table = global_symbol_table
+    result = interpreter.visit(ast.node, context)
+
+    return result.value
