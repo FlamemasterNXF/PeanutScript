@@ -1,3 +1,5 @@
 /Dev
 /venv
 /.idea
+/__pycache__
+/Dist/__pycache__
