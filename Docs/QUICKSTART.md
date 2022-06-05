@@ -14,7 +14,7 @@ Note: **Make sure you have Python 3 installed!**
 ## Running a Script
 ___
 If you did as this guide suggested and simply downloaded the "Dist" folder you will already have your first PeanutScript file!<br>
-This file is called `example.peanut` and contains a simple for loop, a function called "gwa", and a pulls in a basic function from `example2.peanut`. The "gwa" function takes in a string input and gives an output based on that string, and "hi" simply prints some text! Feel free to try it out.<br><br>
+This file is called `example.peanut` and contains a simple `for` loop, a function called `gwa()`, and it uses a basic function from `example2.peanut`. The `gwa()` function takes in a string input and gives an output based on that string, and `hi()` simply prints some text! Feel free to try it out.<br><br>
 Note: **This part of the guide is assuming you use Windows 10.**<br>
 I have no other OSs available to test this on :( <br>
 If you successfully ran a PeanutScript file on another OS please let me know how you did it, and I will add it to this part of the guide!<br><br>
@@ -24,7 +24,7 @@ Okay, now it's time to start PeanutScript!
 - `python peanutShell.py`
 - Congrats! You've successfully started PeanutScript! <br><br>
 
-To run your script file simply use `run("example")`!<br>
+To run your PeanutScript file simply use `run("yourFileNameHere")`!<br>
 You do not need to add .peanut to the end of the file name when using `run`, PeanutScript does this for you :)
 
 ## Concluding Words
