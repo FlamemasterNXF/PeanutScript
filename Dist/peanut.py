@@ -1856,7 +1856,12 @@ class BuiltInFunction(BaseFunction):
         return f'<built-in ${self.name}>'
 
     def execute_print(self, exec_ctx):
-        print(str(exec_ctx.symbol_table.get('value')))
+        if type(exec_ctx.symbol_table.get('value')) is String:
+            print(f"\"{str(exec_ctx.symbol_table.get('value'))}\"")
+        elif type(exec_ctx.symbol_table.get('value')) is Array:
+            print(f"[{str(exec_ctx.symbol_table.get('value'))}]")
+        else:
+            print(str(exec_ctx.symbol_table.get('value')))
         return RTResult().success(String.no_return)
 
     execute_print.arg_names = ["value"]
