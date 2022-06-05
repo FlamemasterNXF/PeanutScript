@@ -6,6 +6,7 @@
 - Re-assigning a variable: `var myVar = n`
 - Accessing a variable: `myVar`
 - Creating a Scoped variable: `scoped myVar...`
+- String Interpolation: `var myVar = "n ${x}"`
 ### Mathematical Operations
 - Addition: `1 + 1`
 - Subtraction: `1 - 1`
