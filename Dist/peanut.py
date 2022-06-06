@@ -10,7 +10,6 @@ from math import floor
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
 LETTERS_DIGITS = LETTERS + DIGITS
-VERSION_NUM = '1.2.4'
 
 
 def string_with_arrows(text, pos_start, pos_end):
@@ -144,6 +143,8 @@ TT_LPAREN = 'LPAREN'
 TT_RPAREN = 'RPAREN'
 TT_LSQUARE = 'LSQUARE'
 TT_RSQUARE = 'RSQUARE'
+TT_LCURLY = 'LCURLY'
+TT_RCURLY = 'RCURLY'
 TT_EE = 'EE'
 TT_NE = 'NE'
 TT_LT = 'LT'
@@ -151,6 +152,7 @@ TT_GT = 'GT'
 TT_LTE = 'LTE'
 TT_GTE = 'GTE'
 TT_COMMA = 'COMMA'
+TT_COLON = 'COLON'
 TT_ARROW = 'ARROW'
 TT_NEWLINE = 'NEWLINE'
 TT_EOF = 'EOF'
@@ -159,6 +161,7 @@ KEYWORDS = [
     'var',
     'let',
     'scoped',
+    'strict',
     'and',
     'or',
     'not',
@@ -175,6 +178,12 @@ KEYWORDS = [
     'return',
     'continue',
     'break'
+]
+
+TYPES = [
+    'string',
+    'int',
+    'float'
 ]
 
 
@@ -263,6 +272,12 @@ class Lexer:
             elif self.current_char == ']':
                 tokens.append(Token(TT_RSQUARE, pos_start=self.pos))
                 self.advance()
+            elif self.current_char == '{':
+                tokens.append(Token(TT_LCURLY, pos_start=self.pos))
+                self.advance()
+            elif self.current_char == '}':
+                tokens.append(Token(TT_RCURLY, pos_start=self.pos))
+                self.advance()
             elif self.current_char == '!':
                 tok, error = self.make_not_equals()
                 if error: return [], error
@@ -275,6 +290,9 @@ class Lexer:
                 tokens.append(self.make_greater_than())
             elif self.current_char == ',':
                 tokens.append(Token(TT_COMMA, pos_start=self.pos))
+                self.advance()
+            elif self.current_char == ':':
+                tokens.append(Token(TT_COLON, pos_start=self.pos))
                 self.advance()
             else:
                 pos_start = self.pos.copy()
@@ -463,6 +481,15 @@ class ScopedAssignNode:
     def __init__(self, var_name_tok, value_node):
         self.var_name_tok = var_name_tok
         self.value_node = value_node
+        self.pos_start = self.var_name_tok.pos_start
+        self.pos_end = self.value_node.pos_end
+
+
+class StrictAssignNode:
+    def __init__(self, var_name_tok, value_node, var_type):
+        self.var_name_tok = var_name_tok
+        self.value_node = value_node
+        self.var_type = var_type
         self.pos_start = self.var_name_tok.pos_start
         self.pos_end = self.value_node.pos_end
 
@@ -681,6 +708,11 @@ class Parser:
             list_expr = res.register(self.list_expr())
             if res.error: return res
             return res.success(list_expr)
+
+        # elif tok.type == TT_LCURLY:
+        #    list_expr = res.register(self.obj_expr())
+        #    if res.error: return res
+        #    return res.success(list_expr)
 
         elif tok.matches(TT_KEYWORD, 'if'):
             if_expr = res.register(self.if_expr())
@@ -1311,6 +1343,60 @@ class Parser:
             if res.error: return res
             return res.success(ScopedAssignNode(var_name, expr))
 
+        if self.current_tok.matches(TT_KEYWORD, 'strict'):
+            res.register_advancement()
+            self.advance()
+
+            if self.current_tok.value not in TYPES:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end,
+                    "Expected Type declaration"
+                ))
+            type_ = self.current_tok.value
+            res.register_advancement()
+            self.advance()
+
+            if self.current_tok.type != TT_IDENTIFIER:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end,
+                    "Expected identifier"
+                ))
+
+            var_name = self.current_tok
+            res.register_advancement()
+            self.advance()
+
+            if self.current_tok.type != TT_EQ:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end,
+                    "Expected '='"
+                ))
+
+            res.register_advancement()
+            self.advance()
+            expr = res.register(self.expression())
+
+            if type_ == "string" and not str(expr).__contains__('STRING'):
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end,
+                    "Expected Type 'string'"
+                ))
+
+            if type_ == "int" and not str(expr).__contains__('INT'):
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end,
+                    "Expected Type 'int'"
+                ))
+
+            if type_ == "float" and not str(expr).__contains__('FLOAT'):
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end,
+                    "Expected Type 'float'"
+                ))
+
+            if res.error: return res
+            return res.success(StrictAssignNode(var_name, expr, type_))
+
         node = res.register(self.BinaryOp(self.comp_expr, ((TT_KEYWORD, 'and'), (TT_KEYWORD, 'or'))))
 
         if res.error:
@@ -1346,6 +1432,7 @@ class RTResult:
         self.func_return_value = None
         self.loop_should_continue = False
         self.loop_should_break = False
+        # self.no_return_value = False
         self.to_reverse_count = 0
         self.reset()
 
@@ -2212,6 +2299,7 @@ class SymbolTable:
         self.symbols = {}
         self.symbols_should_scope = {}
         self.symbols_are_vars = {}
+        self.symbols_are_strict_vars = {}
         self.parent = parent
 
     def get(self, name):
@@ -2226,16 +2314,23 @@ class SymbolTable:
             return self.parent.get(name)
         return should_scope
 
+    def getType(self, name):
+        strict_typed = self.symbols_are_strict_vars.get(name, None)
+        if strict_typed is None and self.parent:
+            return self.parent.get(name)
+        return strict_typed
+
     def varCheck(self, name):
         is_var = self.symbols_are_vars.get(name, None)
         if is_var is None and self.parent:
             return self.parent.get(name)
         return is_var
 
-    def set(self, name, value, is_var=False, is_scoped=False):
+    def set(self, name, value, is_var=False, is_scoped=False, is_strict=False):
         self.symbols[name] = value
         self.symbols_should_scope[name] = is_scoped
         self.symbols_are_vars[name] = is_var
+        self.symbols_are_strict_vars[name] = is_strict
 
     def remove(self, name):
         del self.symbols[name]
@@ -2278,7 +2373,7 @@ class Interpreter:
         value = res.register(self.visit(node.value_node, context))
         if res.should_return(): return res
 
-        global_symbol_table.set(var_name, value, True, False)
+        global_symbol_table.set(var_name, value, True, False, False)
         return res.success(value)
 
     def visit_ScopedAssignNode(self, node, context):
@@ -2288,9 +2383,18 @@ class Interpreter:
         if res.should_return(): return res
 
         if context.parent is None:
-            locked_symbol_table.set(var_name, value, True, True)
+            locked_symbol_table.set(var_name, value, True, True, False)
         else:
-            context.symbol_table.set(var_name, value, True, True)
+            context.symbol_table.set(var_name, value, True, True, False)
+        return res.success(value)
+
+    def visit_StrictAssignNode(self, node, context):
+        res = RTResult()
+        var_name = node.var_name_tok.value
+        value = res.register(self.visit(node.value_node, context))
+        if res.should_return(): return res
+
+        global_symbol_table.set(var_name, value, True, False, True)
         return res.success(value)
 
     def visit_AccessNode(self, node, context):
@@ -2488,7 +2592,7 @@ class Interpreter:
 
         return_value = res.register(value_to_call.execute(args))
         if res.should_return(): return res
-        return_vaulue = return_value.copy().set_pos(node.pos_start, node.pos_end).set_context(context)
+        return_value = return_value.copy().set_pos(node.pos_start, node.pos_end).set_context(context)
         return res.success(return_value)
 
     def visit_ReturnNode(self, node, context):
