@@ -8,7 +8,7 @@ print("Be sure to check https://github.com/FlamemasterNXF/PeanutScript for updat
 while True:
     text = input('input > ')
     if text.strip() == "": continue
-    result, error = peanut.run('CONSOLE', text)
+    result, error = peanut.run(peanut.FILE_NAME, text)
 
     if error: print(error.as_string())
     elif result:

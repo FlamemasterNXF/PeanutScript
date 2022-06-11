@@ -12,6 +12,8 @@ DIGITS = '0123456789'
 LETTERS = string.ascii_letters
 LETTERS_DIGITS = LETTERS + DIGITS
 
+FILE_NAME = 'CONSOLE'
+
 
 def string_with_arrows(text, pos_start, pos_end):
     result = ''
@@ -2704,6 +2706,7 @@ def run(fn, text):
     context.symbol_table = global_symbol_table
     result = interpreter.visit(ast.node, context)
 
+    FILE_NAME = fn
     return result.value, result.error
 
 
