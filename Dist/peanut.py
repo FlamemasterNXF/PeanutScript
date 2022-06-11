@@ -1363,6 +1363,13 @@ class Parser:
                 ))
 
             var_name = self.current_tok
+            clean_var_name = str(var_name).replace('IDENTIFIER:', '')
+            if global_symbol_table.isStrict(clean_var_name):
+                if type_ != global_symbol_table.getType(clean_var_name):
+                    return res.failure(InvalidSyntaxError(
+                        self.current_tok.pos_start, self.current_tok.pos_end,
+                        "Cannot assign 'strict' variable to different type!"
+                    ))
             res.register_advancement()
             self.advance()
 
@@ -2300,6 +2307,7 @@ class SymbolTable:
         self.symbols_should_scope = {}
         self.symbols_are_vars = {}
         self.symbols_are_strict_vars = {}
+        self.var_types = {}
         self.parent = parent
 
     def get(self, name):
@@ -2314,7 +2322,7 @@ class SymbolTable:
             return self.parent.get(name)
         return should_scope
 
-    def getType(self, name):
+    def isStrict(self, name):
         strict_typed = self.symbols_are_strict_vars.get(name, None)
         if strict_typed is None and self.parent:
             return self.parent.get(name)
@@ -2326,11 +2334,18 @@ class SymbolTable:
             return self.parent.get(name)
         return is_var
 
-    def set(self, name, value, is_var=False, is_scoped=False, is_strict=False):
+    def getType(self, name):
+        type_ = self.var_types.get(name, None)
+        if type_ is None and self.parent:
+            return self.parent.get(name)
+        return type_
+
+    def set(self, name, value, is_var=False, is_scoped=False, is_strict=False, type_=None):
         self.symbols[name] = value
         self.symbols_should_scope[name] = is_scoped
         self.symbols_are_vars[name] = is_var
         self.symbols_are_strict_vars[name] = is_strict
+        self.var_types[name] = type_
 
     def remove(self, name):
         del self.symbols[name]
@@ -2391,10 +2406,11 @@ class Interpreter:
     def visit_StrictAssignNode(self, node, context):
         res = RTResult()
         var_name = node.var_name_tok.value
+        type_ = node.var_type
         value = res.register(self.visit(node.value_node, context))
         if res.should_return(): return res
 
-        global_symbol_table.set(var_name, value, True, False, True)
+        global_symbol_table.set(var_name, value, True, False, True, type_)
         return res.success(value)
 
     def visit_AccessNode(self, node, context):
