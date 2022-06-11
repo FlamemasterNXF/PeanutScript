@@ -4,6 +4,7 @@ PeanutScript has quite a few Built-in functions!<br>
 Here is a simple complete list of them all :)<br>
 - print() : Good ol' print. Can take in a string or a number.
 - printReturn() : Prints and returns a number or string.
+- formatNumber() : Prints and returns a number using Scientific Notation.
 - input() : Takes a string input from the user and returns it.
 - inputNumber() : Takes a number input from the user and returns it.
 - cls() : Clears the console.

@@ -2203,10 +2203,17 @@ class BuiltInFunction(BaseFunction):
 
     def execute_format_number(self, exec_ctx):
         number = exec_ctx.symbol_table.get('num')
-        exponent = math.floor(math.log(float(number), 10))
-        mantissa = float(number)/(math.pow(10, exponent))
-        string_ = f"{mantissa}e{exponent}"
-        return RTResult().success(String(string_))
+        if isinstance(number, Number):
+            exponent = math.floor(math.log(float(number), 10))
+            mantissa = float(number)/(math.pow(10, exponent))
+            string_ = f"{mantissa}e{exponent}"
+            return RTResult().success(String(string_))
+        else:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                "Argument must be a Number",
+                exec_ctx
+            ))
 
     execute_format_number.arg_names = ['num']
 

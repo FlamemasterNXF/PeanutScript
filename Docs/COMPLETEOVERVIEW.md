@@ -28,6 +28,13 @@ To access a certain character in a String simply type the String's name, followe
 If you'd like to create a variable that only exists within the scope of its declaration you can use the `scoped` keyword instead!<br>
 Scoped Variables work the same as normal Variables but cannot be access outside the scope they are declared in.<br>
 Be warned that if you create a `scoped` Variable and a `var` Variable in the same context the `var` will override the `scoped`!<br>
+### Strict Variables
+If you'd like to create a variable that has an explicitly assigned type and cannot have its type changed you can use the `strict` keyword!<br>
+Strict Variables work the same as normal Variables, but you must assign a type to the variable during its declaration!<br>
+You do this very simply: `strict type myStrictVar = 1`. The possible types are: `int, float, and string`.<br>
+Strings are any variable which has non-numerical characters in it, Ints are numbers without any decimal values, and Floats are numbers with or without decimal values.<br>
+Once you've created the variable you will not be able to re-assign it to a new type without changing the original declaration!<br>
+Note that Strict Variables are currently not compatible with arrays.
 
 ## Mathematical Operators
 ___
