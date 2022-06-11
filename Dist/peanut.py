@@ -1,5 +1,6 @@
 #!/bin/python3
 # region Imports + Constants
+import math
 import re
 import string
 import os
@@ -339,7 +340,7 @@ class Lexer:
                     code = new_code
                     self.advance()
                 self.advance()
-                code_result = run_pretty('INTERPOLATION', code)
+                code_result = run_interpolation('INTERPOLATION', code)
                 string += str(code_result)
 
         escape_characters = {
@@ -368,7 +369,7 @@ class Lexer:
                         code = new_code
                         self.advance()
                     self.advance()
-                    code_result = run_pretty('INTERPOLATION', code)
+                    code_result = run_interpolation('INTERPOLATION', code)
                     string += str(code_result)
 
         self.advance()
@@ -1692,6 +1693,9 @@ class Number(Value):
     def __int__(self):
         return int(self.value)
 
+    def __float__(self):
+        return float(self.value)
+
     def __repr__(self):
         return str(self.value)
 
@@ -2197,6 +2201,15 @@ class BuiltInFunction(BaseFunction):
 
     execute_unicode_to_number.arg_names = ['string']
 
+    def execute_format_number(self, exec_ctx):
+        number = exec_ctx.symbol_table.get('num')
+        exponent = math.floor(math.log(float(number), 10))
+        mantissa = float(number)/(math.pow(10, exponent))
+        string_ = f"{mantissa}e{exponent}"
+        return RTResult().success(String(string_))
+
+    execute_format_number.arg_names = ['num']
+
     def execute_run(self, exec_ctx):
         fn = exec_ctx.symbol_table.get('fn')
         if not isinstance(fn, String):
@@ -2287,6 +2300,7 @@ BuiltInFunction.base64_encode = BuiltInFunction("base64_encode")
 BuiltInFunction.base64_decode = BuiltInFunction("base64_decode")
 BuiltInFunction.number_to_unicode = BuiltInFunction("number_to_unicode")
 BuiltInFunction.unicode_to_number = BuiltInFunction("unicode_to_number")
+BuiltInFunction.format_number = BuiltInFunction("format_number")
 BuiltInFunction.run = BuiltInFunction("run")
 BuiltInFunction.use = BuiltInFunction("use")
 
@@ -2660,6 +2674,7 @@ global_symbol_table.set("b64Encode", BuiltInFunction.base64_encode)
 global_symbol_table.set("b64Decode", BuiltInFunction.base64_decode)
 global_symbol_table.set("toUnicode", BuiltInFunction.number_to_unicode)
 global_symbol_table.set("fromUnicode", BuiltInFunction.unicode_to_number)
+global_symbol_table.set("formatNumber", BuiltInFunction.format_number)
 global_symbol_table.set("run", BuiltInFunction.run)
 global_symbol_table.set("use", BuiltInFunction.use)
 
@@ -2685,7 +2700,7 @@ def run(fn, text):
     return result.value, result.error
 
 
-def run_pretty(fn, text):
+def run_interpolation(fn, text):
     lexer = Lexer(fn, text)
     tokens, error = lexer.make_tokens()
     if error: return None, error
