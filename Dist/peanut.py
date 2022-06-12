@@ -1345,10 +1345,7 @@ class Parser:
             self.advance()
 
             if self.current_tok.type != TT_EQ:
-                return res.failure(InvalidSyntaxError(
-                    self.current_tok.pos_start, self.current_tok.pos_end,
-                    "Expected '='"
-                ))
+                return res.success(VarAssignNode(var_name, Number.null))
 
             res.register_advancement()
             self.advance()
@@ -1371,10 +1368,7 @@ class Parser:
             self.advance()
 
             if self.current_tok.type != TT_EQ:
-                return res.failure(InvalidSyntaxError(
-                    self.current_tok.pos_start, self.current_tok.pos_end,
-                    "Expected '='"
-                ))
+                return res.success(VarAssignNode(var_name, Number.null))
 
             res.register_advancement()
             self.advance()
@@ -2460,7 +2454,9 @@ class Interpreter:
     def visit_VarAssignNode(self, node, context):
         res = RTResult()
         var_name = node.var_name_tok.value
-        value = res.register(self.visit(node.value_node, context))
+        if node.value_node != Number.null:
+            value = res.register(self.visit(node.value_node, context))
+        else: value = Number.null
         if res.should_return(): return res
 
         global_symbol_table.set(var_name, value, True, False, False)
@@ -2469,7 +2465,10 @@ class Interpreter:
     def visit_ScopedAssignNode(self, node, context):
         res = RTResult()
         var_name = node.var_name_tok.value
-        value = res.register(self.visit(node.value_node, context))
+        if node.value_node != Number.null:
+            value = res.register(self.visit(node.value_node, context))
+        else:
+            value = Number.null
         if res.should_return(): return res
 
         if context.parent is None:
