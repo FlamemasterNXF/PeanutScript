@@ -50,7 +50,7 @@ def containsAny(text, chars):
 # endregion
 
 
-# region Errors and Error Types
+# region Errors, Warning, Error Types, and Warning Types
 class Error:
     def __init__(self, pos_start, pos_end, error_name, details):
         self.pos_start = pos_start
@@ -62,6 +62,18 @@ class Error:
         result = f'{self.error_name}: {self.details}'
         result += f'\nTrace: File {self.pos_start.fn}, line {self.pos_start.ln + 1}'
         result += '\n\n' + string_with_arrows(self.pos_start.ftxt, self.pos_start, self.pos_end)
+        return result
+
+
+class Warning:
+    def __init__(self, pos_start, pos_end, warning_name, details):
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+        self.warning_name = warning_name
+        self.details = details
+
+    def as_string(self):
+        result = f'{self.warning_name}: {self.details}'
         return result
 
 
@@ -89,6 +101,28 @@ class RTError(Error):
         result = self.generate_traceback()
         result += f'{self.error_name}: {self.details}'
         result += '\n\n' + string_with_arrows(self.pos_start.ftxt, self.pos_start, self.pos_end)
+        return result
+
+    def generate_traceback(self):
+        result = ''
+        pos = self.pos_start
+        ctx = self.context
+
+        while ctx:
+            result = f'  File {pos.fn}, line {str(pos.ln + 1)}, in {ctx.display_name}\n' + result
+            pos = ctx.parent_entry_pos
+            ctx = ctx.parent
+
+        return 'Trace:\n' + result
+
+
+class RTWarning(Warning):
+    def __init__(self, pos_start, pos_end, details, context):
+        super().__init__(pos_start, pos_end, 'Runtime Error', details)
+        self.context = context
+
+    def as_string(self):
+        result = self.generate_traceback()
         return result
 
     def generate_traceback(self):
@@ -800,7 +834,8 @@ class Parser:
                 optional_args += 1
                 res.register_advancement()
                 self.advance()
-            else: has_made_mandatory_arg = True
+            else:
+                has_made_mandatory_arg = True
 
             while self.current_tok.type == TT_COMMA:
                 res.register_advancement()
@@ -1469,6 +1504,7 @@ class RTResult:
     def __init__(self):
         self.value = None
         self.error = None
+        self.warn = None
         self.func_return_value = None
         self.loop_should_continue = False
         self.loop_should_break = False
@@ -1521,6 +1557,9 @@ class RTResult:
         self.reset()
         self.error = error
         return self
+
+    def warn(self, warn):
+        self.warn = warn
 
     def should_return(self):
         return (
@@ -1911,9 +1950,12 @@ class BaseFunction(Value):
 
     def populate_args(self, arg_names, arg_defaults, args, exec_ctx):
         if arg_defaults is not None:
-            if len(arg_defaults) != 0: has_defaults = True
-            else: has_defaults = False
-        else: has_defaults = False
+            if len(arg_defaults) != 0:
+                has_defaults = True
+            else:
+                has_defaults = False
+        else:
+            has_defaults = False
         chosen = arg_defaults if has_defaults else args
         for i in range(len(chosen)):
             arg_name = arg_names[i]
@@ -2253,7 +2295,7 @@ class BuiltInFunction(BaseFunction):
         number = exec_ctx.symbol_table.get('num')
         if isinstance(number, Number):
             exponent = math.floor(math.log(float(number), 10))
-            mantissa = float(number)/(math.pow(10, exponent))
+            mantissa = float(number) / (math.pow(10, exponent))
             string_ = f"{mantissa}e{exponent}"
             return RTResult().success(String(string_))
         else:
@@ -2456,7 +2498,8 @@ class Interpreter:
         var_name = node.var_name_tok.value
         if node.value_node != Number.null:
             value = res.register(self.visit(node.value_node, context))
-        else: value = Number.null
+        else:
+            value = Number.null
         if res.should_return(): return res
 
         global_symbol_table.set(var_name, value, True, False, False)
@@ -2473,6 +2516,7 @@ class Interpreter:
 
         if context.parent is None:
             locked_symbol_table.set(var_name, value, True, True, False)
+            print('WARNING: Scoped is redundant in the Global Context!')
         else:
             context.symbol_table.set(var_name, value, True, True, False)
         return res.success(value)
@@ -2661,7 +2705,8 @@ class Interpreter:
         body_node = node.body_node
         arg_names = [arg_name.value for arg_name in node.arg_name_toks]
         arg_defaults = [arg_default for arg_default in node.arg_defaults]
-        func_value = Function(func_name, body_node, arg_names, arg_defaults, node.should_auto_return).set_context(context).set_pos(
+        func_value = Function(func_name, body_node, arg_names, arg_defaults, node.should_auto_return).set_context(
+            context).set_pos(
             node.pos_start, node.pos_end)
 
         if node.var_name_tok:
