@@ -814,8 +814,6 @@ class Parser:
         self.advance()
         arg_name_toks = []
         arg_defaults = []
-        optional_args = 0
-        has_made_mandatory_arg = False
 
         if self.current_tok.type == TT_IDENTIFIER:
             arg_name_toks.append(self.current_tok)
@@ -828,13 +826,6 @@ class Parser:
                 arg_defaults.append(self.current_tok)
                 res.register_advancement()
                 self.advance()
-                has_made_mandatory_arg = True
-
-            if self.current_tok.type == TT_QUESTION:
-                optional_args += 1
-                res.register_advancement()
-                self.advance()
-            else:
                 has_made_mandatory_arg = True
 
             while self.current_tok.type == TT_COMMA:
@@ -856,10 +847,6 @@ class Parser:
                 self.advance()
                 arg_defaults.append(self.current_tok)
                 has_made_mandatory_arg = True
-                res.register_advancement()
-                self.advance()
-            elif self.current_tok.type == TT_QUESTION:
-                optional_args += 1
                 res.register_advancement()
                 self.advance()
 
@@ -2044,17 +2031,15 @@ class BuiltInFunction(BaseFunction):
         return f'<built-in ${self.name}>'
 
     def execute_print(self, exec_ctx):
-        if type(exec_ctx.symbol_table.get('value')) is String:
-            print(f"\"{str(exec_ctx.symbol_table.get('value'))}\"")
-        elif type(exec_ctx.symbol_table.get('value')) is Array:
-            print(f"[{str(exec_ctx.symbol_table.get('value'))}]")
+        if type(exec_ctx.symbol_table.get('value')) is Array:
+            return RTResult().success(String(f"[{str(exec_ctx.symbol_table.get('value'))}]"))
         else:
-            print(str(exec_ctx.symbol_table.get('value')))
-        return RTResult().success(String.no_return)
+            return RTResult().success(String(exec_ctx.symbol_table.get('value')))
 
     execute_print.arg_names = ["value"]
 
     def execute_print_return(self, exec_ctx):
+        print("WARNING: printReturn() is deprecated and will be removed in 1.2.9!")
         return RTResult().success(String(str(exec_ctx.symbol_table.get('value'))))
 
     execute_print_return.arg_names = ["value"]
@@ -2137,6 +2122,8 @@ class BuiltInFunction(BaseFunction):
             ))
 
         array_.elements.append(value)
+        print("WARNING: append() is deprecated and will be removed in 1.2.9!")
+        print("<array> + n can be used as an alternative.")
         return RTResult().success(String.no_return)
 
     execute_append.arg_names = ['array', 'value']
@@ -2166,6 +2153,9 @@ class BuiltInFunction(BaseFunction):
                 'Element at this index could not be removed because the index is out of bounds',
                 exec_ctx
             ))
+
+        print("WARNING: removeIndex() is deprecated and will be removed in 1.2.9!")
+        print("<array> - n can be used as an alternative.")
         return RTResult().success(element)
 
     execute_remove.arg_names = ['array', 'index']
@@ -2188,6 +2178,9 @@ class BuiltInFunction(BaseFunction):
             ))
 
         arrayA.elements.extend(arrayB.elements)
+
+        print("WARNING: concat() is deprecated and will be removed in 1.2.9!")
+        print("<array> * n can be used as an alternative.")
         return RTResult().success(String.no_return)
 
     execute_concat.arg_names = ['arrayA', 'arrayB']
@@ -2373,6 +2366,32 @@ class BuiltInFunction(BaseFunction):
 
     execute_use.arg_names = ['fn']
 
+    def execute_read(self, exec_ctx):
+        fn = exec_ctx.symbol_table.get('fn')
+        if not isinstance(fn, String):
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                "Argument must be a string",
+                exec_ctx
+            ))
+        fn = fn.value
+        if fn != re.search(".peanut$", fn):
+            fn += ".peanut"
+
+        try:
+            with open(fn, 'r') as f:
+                script = f.read()
+        except Exception as e:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                f"Failed to load script \"{fn}\"\n" + str(e),
+                exec_ctx
+            ))
+
+        return RTResult().success(String(script))
+
+    execute_read.arg_names = ['fn']
+
 
 # endregion
 
@@ -2400,6 +2419,7 @@ BuiltInFunction.unicode_to_number = BuiltInFunction("unicode_to_number")
 BuiltInFunction.format_number = BuiltInFunction("format_number")
 BuiltInFunction.run = BuiltInFunction("run")
 BuiltInFunction.use = BuiltInFunction("use")
+BuiltInFunction.read = BuiltInFunction("read")
 
 
 # endregion
@@ -2783,6 +2803,7 @@ global_symbol_table.set("fromUnicode", BuiltInFunction.unicode_to_number)
 global_symbol_table.set("formatNumber", BuiltInFunction.format_number)
 global_symbol_table.set("run", BuiltInFunction.run)
 global_symbol_table.set("use", BuiltInFunction.use)
+global_symbol_table.set("read", BuiltInFunction.read)
 
 
 # endregion
