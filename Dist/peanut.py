@@ -157,6 +157,7 @@ TT_GTE = 'GTE'
 TT_COMMA = 'COMMA'
 TT_COLON = 'COLON'
 TT_ARROW = 'ARROW'
+TT_QUESTION = 'QUESTION'
 TT_NEWLINE = 'NEWLINE'
 TT_EOF = 'EOF'
 
@@ -296,6 +297,9 @@ class Lexer:
                 self.advance()
             elif self.current_char == ':':
                 tokens.append(Token(TT_COLON, pos_start=self.pos))
+                self.advance()
+            elif self.current_char == '?':
+                tokens.append(Token(TT_QUESTION, pos_start=self.pos))
                 self.advance()
             else:
                 pos_start = self.pos.copy()
@@ -776,6 +780,8 @@ class Parser:
         self.advance()
         arg_name_toks = []
         arg_defaults = []
+        optional_args = 0
+        has_made_mandatory_arg = False
 
         if self.current_tok.type == TT_IDENTIFIER:
             arg_name_toks.append(self.current_tok)
@@ -788,6 +794,13 @@ class Parser:
                 arg_defaults.append(self.current_tok)
                 res.register_advancement()
                 self.advance()
+                has_made_mandatory_arg = True
+
+            if self.current_tok.type == TT_QUESTION:
+                optional_args += 1
+                res.register_advancement()
+                self.advance()
+            else: has_made_mandatory_arg = True
 
             while self.current_tok.type == TT_COMMA:
                 res.register_advancement()
@@ -800,6 +813,18 @@ class Parser:
                     ))
 
                 arg_name_toks.append(self.current_tok)
+                res.register_advancement()
+                self.advance()
+
+            if self.current_tok.type == TT_EQ:
+                res.register_advancement()
+                self.advance()
+                arg_defaults.append(self.current_tok)
+                has_made_mandatory_arg = True
+                res.register_advancement()
+                self.advance()
+            elif self.current_tok.type == TT_QUESTION:
+                optional_args += 1
                 res.register_advancement()
                 self.advance()
 
@@ -1896,9 +1921,9 @@ class BaseFunction(Value):
             else: has_defaults = False
         else: has_defaults = False
         chosen = arg_defaults if has_defaults else args
-        for i in range(len(args)):
+        for i in range(len(chosen)):
             arg_name = arg_names[i]
-            if (i > len(args)) or (len(args) == 0):
+            if (len(args) < i) or (len(args) == 0):
                 if str(arg_defaults[i]).__contains__("INT:"):
                     fixed = str(arg_defaults[i]).replace("INT:", '')
                 elif str(arg_defaults[i]).__contains__("STRING:"):
