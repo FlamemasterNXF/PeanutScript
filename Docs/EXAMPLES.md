@@ -31,5 +31,6 @@
 - Single-Line function: `function func() => ...`
 - Multi-Line function: `function func(); ...; end;`
 - Multi-Line function with an argument: `function func(arg); ...; end;`
+- Multi-Line function with an argument that has a default: `function fun(arg=n); ...; end;`
 - Calling a function: `func()`
 - Calling a function with an argument: `func(arg)`

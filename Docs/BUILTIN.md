@@ -3,7 +3,7 @@ ___
 PeanutScript has quite a few Built-in functions!<br>
 Here is a simple complete list of them all :)<br>
 - print() : Good ol' print. Can take in a string or a number.
-- printReturn() : Prints and returns a number or string.
+- printReturn() : Prints and returns a number or string. **DEPRECATED: WILL BE REMOVED IN 1.2.9**
 - formatNumber() : Prints and returns a number using Scientific Notation.
 - input() : Takes a string input from the user and returns it.
 - inputNumber() : Takes a number input from the user and returns it.
@@ -13,9 +13,9 @@ Here is a simple complete list of them all :)<br>
 - isArray() : Takes in any input and returns if that input is an array.
 - isFunction() : Takes in any input and returns if that input is a function.
 - typeof() : Takes in any input and returns that input's type.
-- append() : Adds a value to an array. **May be broken, use `array + n` instead**
-- removeIndex() : Removes a value from an array at a specified index. **May be broken, use `array - n` instead**
-- concat() : Combines two or more arrays into one. **May be broken, use `array * array` instead**
+- append() : Adds a value to an array. **DEPRECATED: WILL BE REMOVED IN 1.2.9**
+- removeIndex() : Removes a value from an array at a specified index. **DEPRECATED: WILL BE REMOVED IN 1.2.9**
+- concat() : Combines two or more arrays into one. **DEPRECATED: WILL BE REMOVED IN 1.2.9**
 - length() : Takes in an Array or String and returns the length.
 - break : Force exits a loop.
 - continue : Skips an iteration of a loop.
@@ -27,6 +27,7 @@ Here is a simple complete list of them all :)<br>
 - fromUnicode() : Takes in a Unicode character and returns the number associated with it.
 - run() : Takes in a string and runs the PeanutScript file with the same name.
 - use() : Takes in a string and allows the file it is used in to access the PeanutScript file with the same name. Also runs that file.
+- read() : Takes in a string and returns the content of the PeanutScript file with the same name.
 
 ### Built-in Values
 - TRUE_VALUE : returns 1

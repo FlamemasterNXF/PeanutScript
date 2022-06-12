@@ -17,6 +17,7 @@ The syntax is a simple extension of usual Strings! Simply putting `${}` anywhere
 
 ### Creating a Variable
 Variables can be created simply using the `var` keyword, followed by a name for the Variable, then a `=`, and then finally a value for the Variable.<br>
+If you wish, you can create a variable without a default value!<br>
 Note that `let` can be used instead of `var`!<br>
 ### Re-assignment 
 Variables can have a new value assigned to them by using the same syntax originally used to create them!<br>
@@ -34,7 +35,7 @@ Strict Variables work the same as normal Variables, but you must assign a type t
 You do this very simply: `strict type myStrictVar = 1`. The possible types are: `int, float, and string`.<br>
 Strings are any variable which has non-numerical characters in it, Ints are numbers without any decimal values, and Floats are numbers with or without decimal values.<br>
 Once you've created the variable you will not be able to re-assign it to a new type without changing the original declaration!<br>
-Note that Strict Variables are currently not compatible with arrays.
+Note that Strict Variables are currently not compatible with arrays, and they must always have a default value.
 
 ## Mathematical Operators
 ___
@@ -96,6 +97,7 @@ For example: `function mySecondFunc(input)`<br>
 This "input" variable has its value assigned when running the function: `mySecondFunc(96)`<br>
 This "input" variable can be used within the scope of the function!<br>
 Remember that all arguments put into a function are *required*. You cannot run the function without all its arguments!<br>
+You can also assign default values to arguments! For example: `function myThirdFunc(input=96)`<br>
 ### Single-Line Functions
 Single-Line functions have a *very slightly* different syntax.<br>
 After the name of the function you must have a `=>` before the function code.<br>
