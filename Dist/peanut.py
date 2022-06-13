@@ -1692,13 +1692,13 @@ class Number(Value):
         if isinstance(other, Number):
             return Bool(int(self.value == other.value)).set_context(self.context), None
         else:
-            return None, Value.illegal_operation(self, other)
+            return Bool(0).set_context(self.context), None
 
     def get_comparison_ne(self, other):
         if isinstance(other, Number):
             return Bool(int(self.value != other.value)).set_context(self.context), None
         else:
-            return None, Value.illegal_operation(self, other)
+            return Bool(1).set_context(self.context), None
 
     def get_comparison_lt(self, other):
         if isinstance(other, Number):
@@ -1799,7 +1799,13 @@ class String(Value):
         if isinstance(other, String):
             return Bool(int(self.value == other.value)).set_context(self.context), None
         else:
-            return None, Value.illegal_operation(self, other)
+            return Bool(0).set_context(self.context), None
+
+    def get_comparison_ne(self, other):
+        if isinstance(other, String):
+            return Bool(int(self.value != other.value)).set_context(self.context), None
+        else:
+            return Bool(1).set_context(self.context), None
 
     def is_true(self):
         return len(self.value) > 0
@@ -1898,6 +1904,42 @@ class Bool(Value):
     def __init__(self, value):
         super().__init__()
         self.value = value
+
+    def get_comparison_eq(self, other):
+        if isinstance(other, Bool):
+            return Bool(int(self.value == other.value)).set_context(self.context), None
+        else:
+            return Bool(0).set_context(self.context), None
+
+    def get_comparison_ne(self, other):
+        if isinstance(other, Bool):
+            return Bool(int(self.value != other.value)).set_context(self.context), None
+        else:
+            return Bool(1).set_context(self.context), None
+
+    def anded_by(self, other):
+        if isinstance(other, Bool):
+            return Bool(int(self.value and other.value)).set_context(self.context), None
+        else:
+            return None, Value.illegal_operation(self, other)
+
+    def ored_by(self, other):
+        if isinstance(other, Bool):
+            return Bool(int(self.value or other.value)).set_context(self.context), None
+        else:
+            return None, Value.illegal_operation(self, other)
+
+    def notted(self, other=None):
+        return Bool(1 if self.value == 0 else 0).set_context(self.context), None
+
+    def is_true(self):
+        return self.value == 1
+
+    def copy(self):
+        copy = Bool(self.value)
+        copy.set_pos(self.pos_start, self.pos_end)
+        copy.set_context(self.context)
+        return copy
 
     def __repr__(self):
         if self.value == 1:
@@ -2038,12 +2080,6 @@ class BuiltInFunction(BaseFunction):
 
     execute_print.arg_names = ["value"]
 
-    def execute_print_return(self, exec_ctx):
-        print("WARNING: printReturn() is deprecated and will be removed in 1.2.9!")
-        return RTResult().success(String(str(exec_ctx.symbol_table.get('value'))))
-
-    execute_print_return.arg_names = ["value"]
-
     def execute_input(self, exec_ctx):
         text = input()
         return RTResult().success(String(text))
@@ -2097,6 +2133,7 @@ class BuiltInFunction(BaseFunction):
         is_string = isinstance(exec_ctx.symbol_table.get('value'), String)
         is_array = isinstance(exec_ctx.symbol_table.get('value'), Array)
         is_function = isinstance(exec_ctx.symbol_table.get('value'), BaseFunction)
+        is_bool = isinstance(exec_ctx.symbol_table.get('value'), Bool)
         if is_number:
             return RTResult().success(String("Number"))
         elif is_string:
@@ -2105,85 +2142,12 @@ class BuiltInFunction(BaseFunction):
             return RTResult().success(String("Array"))
         elif is_function:
             return RTResult().success(String("Function"))
+        elif is_bool:
+            return RTResult().success(String("Bool"))
         else:
             return RTResult().success(String("That's strange, this value has no type."))
 
     execute_typeof.arg_names = ['value']
-
-    def execute_append(self, exec_ctx):
-        array_ = exec_ctx.symbol_table.get('array')
-        value = exec_ctx.symbol_table.get('value')
-
-        if not isinstance(array_, Array):
-            return RTResult().failure(RTError(
-                self.pos_start, self.pos_end,
-                "First argument must be an array",
-                exec_ctx
-            ))
-
-        array_.elements.append(value)
-        print("WARNING: append() is deprecated and will be removed in 1.2.9!")
-        print("<array> + n can be used as an alternative.")
-        return RTResult().success(String.no_return)
-
-    execute_append.arg_names = ['array', 'value']
-
-    def execute_remove(self, exec_ctx):
-        array_ = exec_ctx.symbol_table.get('array')
-        index = exec_ctx.symbol_table.get('index')
-
-        if not isinstance(array_, Array):
-            return RTResult().failure(RTError(
-                self.pos_start, self.pos_end,
-                "First argument must be an array",
-                exec_ctx
-            ))
-        if not isinstance(index, Number):
-            return RTResult().failure(RTError(
-                self.pos_start, self.pos_end,
-                "Second argument must be a number",
-                exec_ctx
-            ))
-
-        try:
-            element = array_.elements.pop(index.value)
-        except:
-            return RTResult().failure(RTError(
-                self.pos_start, self.pos_end,
-                'Element at this index could not be removed because the index is out of bounds',
-                exec_ctx
-            ))
-
-        print("WARNING: removeIndex() is deprecated and will be removed in 1.2.9!")
-        print("<array> - n can be used as an alternative.")
-        return RTResult().success(element)
-
-    execute_remove.arg_names = ['array', 'index']
-
-    def execute_concat(self, exec_ctx):
-        arrayA = exec_ctx.symbol_table.get('arrayA')
-        arrayB = exec_ctx.symbol_table.get('arrayB')
-
-        if not isinstance(arrayA, Array):
-            return RTResult().failure(RTError(
-                self.pos_start, self.pos_end,
-                "First argument must be an array",
-                exec_ctx
-            ))
-        if not isinstance(arrayB, Number):
-            return RTResult().failure(RTError(
-                self.pos_start, self.pos_end,
-                "Second argument must be an array",
-                exec_ctx
-            ))
-
-        arrayA.elements.extend(arrayB.elements)
-
-        print("WARNING: concat() is deprecated and will be removed in 1.2.9!")
-        print("<array> * n can be used as an alternative.")
-        return RTResult().success(String.no_return)
-
-    execute_concat.arg_names = ['arrayA', 'arrayB']
 
     def execute_len(self, exec_ctx):
         array_ = exec_ctx.symbol_table.get('array')
