@@ -1,7 +1,7 @@
 #!/bin/python3
 import peanut
 
-VERSION_NUM = '1.2.9'
+VERSION_NUM = '1.2.8'
 
 print(f"You're Running PeanutScript v{VERSION_NUM}")
 print("Be sure to check https://github.com/FlamemasterNXF/PeanutScript for updates!")
