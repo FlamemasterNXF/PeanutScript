@@ -1822,12 +1822,6 @@ class String(Value):
     def __getitem__(self, items):
         return type(items), items
 
-    def __len__(self):
-        count = 0
-        for i in self.value:
-            count += 1
-        return count
-
     def __str__(self):
         return self.value
 
