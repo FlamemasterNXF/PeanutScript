@@ -1390,7 +1390,7 @@ class Parser:
             self.advance()
 
             if self.current_tok.type != TT_EQ:
-                return res.success(VarAssignNode(var_name, Number.null))
+                return res.success(ScopedAssignNode(var_name, Number.null))
 
             res.register_advancement()
             self.advance()
