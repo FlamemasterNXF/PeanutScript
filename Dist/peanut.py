@@ -367,12 +367,17 @@ class Lexer:
         string = ''
         pos_start = self.pos.copy()
         escape_character = False
-        code = ''
-        code_result = None
         self.advance()
+
+        escape_characters = {
+            'n': '\n',
+            't': '\t',
+            '$': '\$'
+        }
 
         if self.current_char == '$' and self.previous_char != '\\':
             self.advance()
+            code = ""
             if self.current_char == '{':
                 self.advance()
                 while self.current_char != '}':
@@ -382,12 +387,6 @@ class Lexer:
                 self.advance()
                 code_result = run_interpolation('INTERPOLATION', code)
                 string += str(code_result)
-
-        escape_characters = {
-            'n': '\n',
-            't': '\t',
-            '$': '\$'
-        }
 
         while self.current_char != None and (self.current_char != '"' or escape_character):
             if escape_character:
@@ -402,6 +401,7 @@ class Lexer:
 
             if self.current_char == '$' and self.previous_char != '\\':
                 self.advance()
+                code = ""
                 if self.current_char == '{':
                     self.advance()
                     while self.current_char != '}':
