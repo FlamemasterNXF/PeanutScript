@@ -2029,7 +2029,7 @@ class Function(BaseFunction):
         value = res.register(interpreter.visit(self.body_node, exec_ctx))
         if res.should_return() and res.func_return_value is None: return res
 
-        ret_value = (value if self.should_auto_return else None) or res.func_return_value or Number.null
+        ret_value = (value if self.should_auto_return else None) or res.func_return_value or String.no_return
         return res.success(ret_value)
 
     def copy(self):
