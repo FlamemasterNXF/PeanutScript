@@ -3,10 +3,10 @@ import peanut
 
 VERSION_NUM = '1.2.8'
 
-print(f"You're Running PeanutScript v{VERSION_NUM}")
-print("Be sure to check https://github.com/FlamemasterNXF/PeanutScript for updates!")
+print(f"[34mYou're running PeanutScript [96mv{VERSION_NUM}[0m")
+print("[34mBe sure to check [94mhttps://github.com/FlamemasterNXF/PeanutScript[34m for updates![0m")
 while True:
-    text = input('input > ')
+    text = input('[92mInput >[0m ')
     if text.strip() == "": continue
     result, error = peanut.run(peanut.FILE_NAME, text)
 
