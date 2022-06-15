@@ -375,6 +375,19 @@ class Lexer:
             '$': '\$'
         }
 
+        if self.current_char == '$' and self.previous_char != '\\':
+            self.advance()
+            code = ""
+            if self.current_char == '{':
+                self.advance()
+                while self.current_char != '}':
+                    new_code = code + self.current_char
+                    code = new_code
+                    self.advance()
+                self.advance()
+                code_result = run_interpolation('INTERPOLATION', code)
+                string += str(code_result)
+
         while self.current_char != None and (self.current_char != '"' or escape_character):
             if escape_character:
                 string += escape_characters.get(self.current_char, self.current_char)
