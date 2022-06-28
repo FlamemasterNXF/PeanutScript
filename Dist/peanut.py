@@ -375,18 +375,9 @@ class Lexer:
             '$': '\$'
         }
 
-        if self.current_char == '$' and self.previous_char != '\\':
-            self.advance()
-            code = ""
-            if self.current_char == '{':
-                self.advance()
-                while self.current_char != '}':
-                    new_code = code + self.current_char
-                    code = new_code
-                    self.advance()
-                self.advance()
-                code_result = run_interpolation('INTERPOLATION', code)
-                string += str(code_result)
+        if self.current_char == '$':
+            interpolated = self.interpolate()
+            string += str(interpolated)
 
         while self.current_char != None and (self.current_char != '"' or escape_character):
             if escape_character:
@@ -399,21 +390,26 @@ class Lexer:
             self.advance()
             escape_character = False
 
-            if self.current_char == '$' and self.previous_char != '\\':
-                self.advance()
-                code = ""
-                if self.current_char == '{':
-                    self.advance()
-                    while self.current_char != '}':
-                        new_code = code + self.current_char
-                        code = new_code
-                        self.advance()
-                    self.advance()
-                    code_result = run_interpolation('INTERPOLATION', code)
-                    string += str(code_result)
+            if self.current_char == '$':
+                interpolated = self.interpolate()
+                string += str(interpolated)
 
         self.advance()
         return Token(TT_STRING, string, pos_start, self.pos)
+
+    def interpolate(self):
+        if self.previous_char != '\\':
+            self.advance()
+            code = ""
+            if self.current_char == '{':
+                self.advance()
+                while self.current_char != '}':
+                    new_code = code + self.current_char
+                    code = new_code
+                    self.advance()
+                self.advance()
+                code_result = run_interpolation('INTERPOLATION', code)
+                return code_result
 
     def make_identifier(self):
         id_str = ''
@@ -2053,7 +2049,7 @@ class BuiltInFunction(BaseFunction):
         method_name = f'execute_{self.name}'
         method = getattr(self, method_name, self.no_visit_method)
 
-        res.register(self.check_and_populate_args(method.arg_names, None, args, exec_ctx))
+        res.register(self.check_and_populate_args(method.arg_names, method.arg_defaults, args, exec_ctx))
         if res.should_return(): return res
 
         return_value = res.register(method(exec_ctx))
@@ -2073,26 +2069,28 @@ class BuiltInFunction(BaseFunction):
         return f'<built-in ${self.name}>'
 
     def execute_print(self, exec_ctx):
-        if type(exec_ctx.symbol_table.get('value')) is String:
-            print(f"\"{str(exec_ctx.symbol_table.get('value'))}\"")
-        elif type(exec_ctx.symbol_table.get('value')) is Array:
+        if type(exec_ctx.symbol_table.get('value')) is Array:
             print(f"[{str(exec_ctx.symbol_table.get('value'))}]")
         else:
             print(str(exec_ctx.symbol_table.get('value')))
+
         return RTResult().success(String.no_return)
 
     execute_print.arg_names = ["value"]
+    execute_print.arg_defaults = []
 
     def execute_print_return(self, exec_ctx):
         return RTResult().success(String(str(exec_ctx.symbol_table.get('value'))))
 
     execute_print_return.arg_names = ["value"]
+    execute_print_return.arg_defaults = []
 
     def execute_input(self, exec_ctx):
         text = input()
         return RTResult().success(String(text))
 
     execute_input.arg_names = []
+    execute_input.arg_defaults = []
 
     def execute_input_int(self, exec_ctx):
         while True:
@@ -2105,36 +2103,42 @@ class BuiltInFunction(BaseFunction):
         return RTResult().success(number)
 
     execute_input_int.arg_names = []
+    execute_input_int.arg_defaults = []
 
     def execute_clear(self, exec_ctx):
         os.system('cls' if os.name == 'windows' else 'clear')
         return RTResult().success(String.no_return)
 
     execute_clear.arg_names = []
+    execute_clear.arg_defaults = []
 
     def execute_is_number(self, exec_ctx):
         is_number = isinstance(exec_ctx.symbol_table.get('value'), Number)
         return RTResult().success(Number.true if is_number else Number.false)
 
     execute_is_number.arg_names = ['value']
+    execute_is_number.arg_defaults = []
 
     def execute_is_string(self, exec_ctx):
         is_number = isinstance(exec_ctx.symbol_table.get('value'), String)
         return RTResult().success(Number.true if is_number else Number.false)
 
     execute_is_string.arg_names = ['value']
+    execute_is_string.arg_defaults = []
 
     def execute_is_array(self, exec_ctx):
         is_number = isinstance(exec_ctx.symbol_table.get('value'), Array)
         return RTResult().success(Number.true if is_number else Number.false)
 
     execute_is_array.arg_names = ['value']
+    execute_is_array.arg_defaults = []
 
     def execute_is_function(self, exec_ctx):
         is_number = isinstance(exec_ctx.symbol_table.get('value'), BaseFunction)
         return RTResult().success(Number.true if is_number else Number.false)
 
     execute_is_function.arg_names = ['value']
+    execute_is_function.arg_defaults = []
 
     def execute_typeof(self, exec_ctx):
         is_number = isinstance(exec_ctx.symbol_table.get('value'), Number)
@@ -2156,6 +2160,7 @@ class BuiltInFunction(BaseFunction):
             return RTResult().success(String("That's strange, this value has no type."))
 
     execute_typeof.arg_names = ['value']
+    execute_typeof.arg_defaults = []
 
     def execute_len(self, exec_ctx):
         array_ = exec_ctx.symbol_table.get('array')
@@ -2171,11 +2176,13 @@ class BuiltInFunction(BaseFunction):
             ))
 
     execute_len.arg_names = ['array']
+    execute_len.arg_defaults = []
 
     def execute_time(self, exec_ctx):
         return RTResult().success(Number(time.time()))
 
     execute_time.arg_names = []
+    execute_time.arg_defaults = []
 
     def execute_base64_encode(self, exec_ctx):
         string_ = exec_ctx.symbol_table.get('string')
@@ -2193,6 +2200,7 @@ class BuiltInFunction(BaseFunction):
             ))
 
     execute_base64_encode.arg_names = ['string']
+    execute_base64_encode.arg_defaults = []
 
     def execute_base64_decode(self, exec_ctx):
         string_ = exec_ctx.symbol_table.get('string')
@@ -2215,6 +2223,7 @@ class BuiltInFunction(BaseFunction):
             ))
 
     execute_base64_decode.arg_names = ['string']
+    execute_base64_decode.arg_defaults = []
 
     def execute_number_to_unicode(self, exec_ctx):
         number_ = exec_ctx.symbol_table.get('number')
@@ -2235,6 +2244,7 @@ class BuiltInFunction(BaseFunction):
             ))
 
     execute_number_to_unicode.arg_names = ['number']
+    execute_number_to_unicode.arg_defaults = []
 
     def execute_unicode_to_number(self, exec_ctx):
         string_ = exec_ctx.symbol_table.get('string')
@@ -2255,6 +2265,7 @@ class BuiltInFunction(BaseFunction):
             ))
 
     execute_unicode_to_number.arg_names = ['string']
+    execute_unicode_to_number.arg_defaults = []
 
     def execute_format_number(self, exec_ctx):
         number = exec_ctx.symbol_table.get('num')
@@ -2271,6 +2282,7 @@ class BuiltInFunction(BaseFunction):
             ))
 
     execute_format_number.arg_names = ['num']
+    execute_format_number.arg_defaults = []
 
     def execute_run(self, exec_ctx):
         fn = exec_ctx.symbol_table.get('fn')
@@ -2304,6 +2316,7 @@ class BuiltInFunction(BaseFunction):
         return RTResult().success(String.no_return)
 
     execute_run.arg_names = ['fn']
+    execute_run.arg_defaults = []
 
     def execute_use(self, exec_ctx):
         fn = exec_ctx.symbol_table.get('fn')
@@ -2337,6 +2350,7 @@ class BuiltInFunction(BaseFunction):
         return RTResult().success(String.no_return)
 
     execute_use.arg_names = ['fn']
+    execute_use.arg_defaults = []
 
     def execute_read(self, exec_ctx):
         fn = exec_ctx.symbol_table.get('fn')
@@ -2363,6 +2377,7 @@ class BuiltInFunction(BaseFunction):
         return RTResult().success(String(script))
 
     execute_read.arg_names = ['fn']
+    execute_read.arg_defaults = []
 
 
 # endregion
