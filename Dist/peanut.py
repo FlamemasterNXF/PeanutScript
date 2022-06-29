@@ -265,7 +265,6 @@ class Lexer:
 
     def make_tokens(self):
         tokens = []
-
         while self.current_char is not None:
             if self.current_char in ' \t':
                 self.advance()
@@ -375,10 +374,6 @@ class Lexer:
             '$': '\$'
         }
 
-        if self.current_char == '$':
-            interpolated = self.interpolate()
-            string += str(interpolated)
-
         while self.current_char != None and (self.current_char != '"' or escape_character):
             if escape_character:
                 string += escape_characters.get(self.current_char, self.current_char)
@@ -390,26 +385,22 @@ class Lexer:
             self.advance()
             escape_character = False
 
-            if self.current_char == '$':
-                interpolated = self.interpolate()
-                string += str(interpolated)
-
         self.advance()
         return Token(TT_STRING, string, pos_start, self.pos)
 
-    def interpolate(self):
-        if self.previous_char != '\\':
-            self.advance()
-            code = ""
-            if self.current_char == '{':
-                self.advance()
-                while self.current_char != '}':
-                    new_code = code + self.current_char
-                    code = new_code
-                    self.advance()
-                self.advance()
-                code_result = run_interpolation('INTERPOLATION', code)
-                return code_result
+    # def interpolate(self):
+    #    if self.previous_char != '\\':
+    #        self.advance()
+    #        code = ""
+    #        if self.current_char == '{':
+    #            self.advance()
+    #            while self.current_char != '}':
+    #                new_code = code + self.current_char
+    #                code = new_code
+    #                self.advance()
+    #            self.advance()
+    #            code_result = run_interpolation('INTERPOLATION', code, )
+    #            return code_result
 
     def make_identifier(self):
         id_str = ''
@@ -490,8 +481,9 @@ class NumberNode:
 
 
 class StringNode:
-    def __init__(self, tok):
+    def __init__(self, tok, to_interpolate):
         self.tok = tok
+        self.to_interpolate = to_interpolate
         self.pos_start = self.tok.pos_start
         self.pos_end = self.tok.pos_end
 
@@ -718,9 +710,16 @@ class Parser:
             return res.success(NumberNode(tok))
 
         elif tok.type == TT_STRING:
+            to_interpolate = None
+            if containsAny(str(tok), '$') and containsAny(str(tok), '{'):
+                fixed = str(tok)
+                start = fixed.index('{')
+                end = fixed.index('}', start + 1)
+                substring = fixed[start + 1:end]
+                to_interpolate = String(substring)
             res.register_advancement()
             self.advance()
-            return res.success(StringNode(tok))
+            return res.success(StringNode(tok, to_interpolate))
 
         elif tok.type == TT_IDENTIFIER:
             res.register_advancement()
@@ -2484,8 +2483,11 @@ class Interpreter:
         )
 
     def visit_StringNode(self, node, context):
+        hide_interpolation = '${' + str(node.to_interpolate) + '}'
+        interpolated = run_interpolation(str(node.to_interpolate), context)
+        fixed = (str(node.tok.value).replace(hide_interpolation, str(interpolated))).strip()
         return RTResult().success(
-            String(node.tok.value).set_context(context).set_pos(node.pos_start, node.pos_end)
+            String(fixed).set_context(context).set_pos(node.pos_start, node.pos_end)
         )
 
     def visit_ArrayNode(self, node, context):
@@ -2815,8 +2817,8 @@ def run(fn, text):
     return result.value, result.error
 
 
-def run_interpolation(fn, text):
-    lexer = Lexer(fn, text)
+def run_interpolation(text, context):
+    lexer = Lexer('INTERPOLATION', text)
     tokens, error = lexer.make_tokens()
     if error: return None, error
 
@@ -2825,8 +2827,6 @@ def run_interpolation(fn, text):
     if ast.error: return None, ast.error
 
     interpreter = Interpreter()
-    context = Context('BASE_LEVEL_SCRIPT')
-    context.symbol_table = global_symbol_table
     result = interpreter.visit(ast.node, context)
 
     return result.value
